@@ -21,10 +21,10 @@ export const Route = createRootRoute({
       }),
     );
     return (
-      <>
+      <div className="min-h-screen text-slate-200 bg-slate-900">
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            <div className="flex gap-2 p-2">
+            <div className="flex items-center justify-center gap-4 py-7 bg-slate-800 border-b border-slate-700">
               <Link to="/" className="[&.active]:font-bold">
                 Home
               </Link>{" "}
@@ -32,12 +32,11 @@ export const Route = createRootRoute({
                 About
               </Link>
             </div>
-            <hr />
             <Outlet />
             <TanStackRouterDevtools />
           </QueryClientProvider>
         </trpc.Provider>
-      </>
+      </div>
     );
   },
 });
