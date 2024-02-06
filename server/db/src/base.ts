@@ -1,0 +1,10 @@
+import { sql } from "drizzle-orm";
+import { char, datetime, mysqlTable, varchar } from "drizzle-orm/mysql-core";
+
+export const Users = mysqlTable("user", {
+  id: char("id", { length: 36 }).primaryKey(),
+  firstName: varchar("firstName", { length: 35 }),
+  lastName: varchar("lastName", { length: 35 }),
+  email: varchar("email", { length: 255 }),
+  joined: datetime("joined", { mode: "date" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+})
