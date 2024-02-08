@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "push": "drizzle-kit push:mysql"
   },
   "dependencies": {
     "@hono/node-server": "^1.3.5",

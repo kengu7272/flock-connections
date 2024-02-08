@@ -9,4 +9,4 @@ const connection = new Client({
 });
 
 // @ts-expect-error
-const db = drizzle(connection);
+export const db = drizzle(connection);

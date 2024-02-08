@@ -1,7 +1,7 @@
 import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
- schema: "./schema.ts",
+ schema: "./server/db/src/schema.ts",
   driver: 'mysql2',
   dbCredentials: {
     uri: process.env.DATABASE_URL,
