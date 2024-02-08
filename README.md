@@ -1,13 +1,17 @@
-Template repository for using vono, tRPC and Tanstack Router
+# Flock Connections
+The Group Social Media App
 
-To get started, run
-`pnpm i`
-and
-`pnpm dev`.
+- Several individual user accounts share one group account
+- Majority vote (rounded up) must be placed to make decisions
+- Giant group chats between groups to encourage making new friends
 
-### Documentation Links
-- [tRPC](https://trpc.io/docs)
-- [Tanstack Query](https://tanstack.com/query/latest/docs/framework/react/overview)
-- [Tanstack Router](https://tanstack.com/router/latest/docs/framework/react/overview)
-- [Hono](https://hono.dev/top)
-- [Vite](https://vitejs.dev/guide/)
+## Tech Stack
+- Vite React, Tailwind CSS
+- Hono.js / Vono.js
+- MySQL, Drizzle
+
+## Get Started
+- Fill out the sample.env to setup access to providers
+- run "pnpm i"
+- run "pnpm dev"
+- You now have a beautiful dev server running

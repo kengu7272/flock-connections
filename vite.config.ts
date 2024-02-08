@@ -9,4 +9,7 @@ export default defineConfig({
   'server' : {'port' : 3000},
   publicDir: './client/public',
   plugins : [ react(), vono(), tsconfigPaths(), TanStackRouterVite({'routesDirectory': './client/src/routes/', generatedRouteTree: './client/src/routeTree.gen.ts'}) ],
+  optimizeDeps: {
+    exclude: ["oslo"]
+  }
 });

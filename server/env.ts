@@ -1,4 +1,5 @@
 import { TypeOf, z } from "zod";
+import "dotenv/config"
 
 declare global {
   namespace NodeJS {
@@ -12,6 +13,10 @@ const zodEnv = z.object({
   DATABASE_USERNAME: z.string(),
   DATABASE_PASSWORD: z.string(),
   DATABASE_URL: z.string(),
+
+  // Google
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
 });
 
 try {

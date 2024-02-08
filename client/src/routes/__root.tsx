@@ -24,12 +24,15 @@ export const Route = createRootRoute({
       <div className="min-h-screen text-slate-200 bg-slate-900">
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            <div className="flex items-center justify-center gap-4 py-7 bg-slate-800 border-b border-slate-700">
+            <div className="flex relative items-center justify-center gap-4 py-7 bg-slate-800 border-b border-slate-700">
               <Link to="/" className="[&.active]:font-bold">
                 Home
               </Link>{" "}
               <Link to="/about" className="[&.active]:font-bold">
                 About
+              </Link>
+              <Link to="/login" className="[&.active]:font-bold absolute right-12">
+                Login
               </Link>
             </div>
             <Outlet />
