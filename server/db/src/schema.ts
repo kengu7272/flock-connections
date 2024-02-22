@@ -1,17 +1,16 @@
 import { sql } from "drizzle-orm";
-import { char, datetime, mysqlTable, varchar } from "drizzle-orm/mysql-core";
+import { datetime, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 
 export const Users = mysqlTable("user", {
-  id: char("id", { length: 36 }).primaryKey(),
-  firstName: varchar("firstName", { length: 35 }),
-  lastName: varchar("lastName", { length: 35 }),
-  email: varchar("email", { length: 255 }),
+  id: varchar("id", { length: 255 }).primaryKey(),
+  username: varchar("username", { length: 16}).unique(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
   joined: datetime("joined", { mode: "date" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  picture: text("picture"),
 });
 
-export const Session = mysqlTable("session", {
-  id: char("id", { length: 36 }).primaryKey(),
-  userId: char("userId", { length: 36 }).primaryKey(),
+export const Sessions = mysqlTable("session", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  userId: varchar("userId", { length: 255 }).unique().notNull(),
   expiresAt: datetime("expiresAt", { mode: "date" }).notNull(),
 });
-

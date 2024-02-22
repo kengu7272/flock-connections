@@ -57,8 +57,8 @@ dependencies:
     specifier: ^3.9.1
     version: 3.9.1
   oslo:
-    specifier: ^1.0.4
-    version: 1.0.4
+    specifier: ^1.1.1
+    version: 1.1.1
   react:
     specifier: ^18.2.0
     version: 18.2.0
@@ -2237,7 +2237,7 @@ packages:
       dotenv: 16.4.1
       front-matter: 4.0.2
       nanoid: 4.0.2
-      oslo: 1.0.4
+      oslo: 1.1.1
     dev: false
 
   /autoprefixer@10.4.17(postcss@8.4.33):
@@ -3738,8 +3738,8 @@ packages:
       '@node-rs/bcrypt': 1.9.2
     dev: false
 
-  /oslo@1.0.4:
-    resolution: {integrity: sha512-f8gRy1Kb3+uY0HjBRyz0XcC7PU/EGU0wmXgiwWxvKhvHjlO01i15mDfQV3ncyKRWmcqLBRhnyRnhcFIs+3E9SA==}
+  /oslo@1.1.1:
+    resolution: {integrity: sha512-BuJp5GfBW3jkUDLb8VftXD9FRTfjnodMyVshSy6p4UP8PhQI8auTxAQlef9NdFe6JC4mEgZb/mhMJpfNVudDTA==}
     dependencies:
       '@node-rs/argon2': 1.7.0
       '@node-rs/bcrypt': 1.9.0
