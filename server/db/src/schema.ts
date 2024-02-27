@@ -1,5 +1,7 @@
+import { DrizzleMySQLAdapter } from "@lucia-auth/adapter-drizzle";
 import { sql } from "drizzle-orm";
 import { datetime, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
+import { db } from "..";
 
 export const Users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -14,3 +16,5 @@ export const Sessions = mysqlTable("session", {
   userId: varchar("userId", { length: 255 }).unique().notNull(),
   expiresAt: datetime("expiresAt", { mode: "date" }).notNull(),
 });
+
+export const adapter = new DrizzleMySQLAdapter(db, Sessions, Users)

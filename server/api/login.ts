@@ -14,6 +14,8 @@ import { Users } from "../db/src/schema";
 const hono = new Hono();
 
 hono.get("/google", async (c) => {
+  if (c.var.user) return c.redirect("/");
+
   const verifier = generateCodeVerifier();
   const state = generateState();
   const url = await google.createAuthorizationURL(state, verifier, {
@@ -58,7 +60,6 @@ hono.get("/google/callback", async (c) => {
 
   try {
     const tokens = await google.validateAuthorizationCode(code, codeVerifier);
-
     const response = await fetch(
       "https://openidconnect.googleapis.com/v1/userinfo",
       {
@@ -67,52 +68,51 @@ hono.get("/google/callback", async (c) => {
         },
       },
     );
-
     const user = (await response.json()) as {
       sub: string;
       picture: string;
       email: string;
     };
 
-    const session = await lucia.createSession(user.sub, {
-      id: user.sub,
-      email: user.email,
-      username: undefined,
-    });
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    setCookie(c, sessionCookie.name, sessionCookie.value, {
-      ...sessionCookie.attributes,
-      sameSite: sessionCookie.attributes.sameSite
-        ? ((sessionCookie.attributes.sameSite[0].toUpperCase() +
-            sessionCookie.attributes.sameSite.slice(1)) as
-            | "Lax"
-            | "Strict"
-            | "None")
-        : undefined,
-    });
-
     const [existingUser] = await db
       .select()
       .from(Users)
       .where(eq(Users.id, user.sub));
-    if (existingUser) return c.redirect("/");
 
-    await db
-      .insert(Users)
-      .values({ id: user.sub, email: user.email, picture: user.picture });
-
-    return c.redirect("/");
-  } catch (e) {
-    if(e instanceof Error) console.log(e.message);
-
-    if (e instanceof OAuth2RequestError) {
-      // bad verification code, invalid credentials, etc
-      c.status(400);
-      return c.text("Bad verification code or invalid credentials");
+    if (existingUser) {
+      const session = await lucia.createSession(existingUser.id, {});
+      const sessionCookie = lucia.createSessionCookie(session.id);
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: "/",
+          "Set-Cookie": sessionCookie.serialize(),
+        },
+      });
     }
 
-    c.status(500);
-    return c.text("Internal Server Error");
+    await db.insert(Users).values({ id: user.sub, email: user.email, picture: user.picture });
+
+    const session = await lucia.createSession(user.sub, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/",
+        "Set-Cookie": sessionCookie.serialize(),
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    if (e instanceof OAuth2RequestError) {
+      // bad verification code, invalid credentials, etc
+      return new Response(null, {
+        status: 400,
+      });
+    }
+    return new Response(null, {
+      status: 500,
+    });
   }
 });
 
