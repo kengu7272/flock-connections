@@ -1,4 +1,5 @@
 import { TypeOf, z } from "zod";
+import "dotenv/config";
 
 declare global {
   namespace NodeJS {
