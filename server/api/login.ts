@@ -68,6 +68,7 @@ hono.get("/google/callback", async (c) => {
         },
       },
     );
+
     const user = (await response.json()) as {
       sub: string;
       picture: string;
@@ -80,7 +81,12 @@ hono.get("/google/callback", async (c) => {
       .where(eq(Users.id, user.sub));
 
     if (existingUser) {
-      const session = await lucia.createSession(existingUser.id, {});
+      const session = await lucia.createSession(existingUser.id, {
+        id: existingUser.id,
+        picture: existingUser.picture,
+        username: existingUser.username,
+        email: existingUser.email,
+      });
       const sessionCookie = lucia.createSessionCookie(session.id);
       return new Response(null, {
         status: 302,
@@ -91,9 +97,16 @@ hono.get("/google/callback", async (c) => {
       });
     }
 
-    await db.insert(Users).values({ id: user.sub, email: user.email, picture: user.picture });
+    await db
+      .insert(Users)
+      .values({ id: user.sub, email: user.email, picture: user.picture });
 
-    const session = await lucia.createSession(user.sub, {});
+    const session = await lucia.createSession(user.sub, {
+      id: user.sub,
+      picture: user.picture,
+      email: user.email,
+      username: null,
+    });
     const sessionCookie = lucia.createSessionCookie(session.id);
     return new Response(null, {
       status: 302,

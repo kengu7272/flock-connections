@@ -20,6 +20,7 @@ export const Route = createRootRoute({
         ],
       }),
     );
+
     return (
       <div className="min-h-screen text-slate-200 bg-slate-900">
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
