@@ -13,6 +13,7 @@ export default defineConfig({
     vono(),
     tsconfigPaths(),
     TanStackRouterVite({
+      routeFileIgnorePrefix: "~",
       routesDirectory: "./client/src/routes/",
       generatedRouteTree: "./client/src/routeTree.gen.ts",
     }),

@@ -1,10 +1,11 @@
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import type { AnyRouter } from "@trpc/server";
 import type { FetchHandlerRequestOptions } from "@trpc/server/adapters/fetch";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import type { MiddlewareHandler } from "hono";
 import SuperJSON from "superjson";
-import { DatabaseUserAttributes, Session } from "./auth/auth";
+
+import { DatabaseUserAttributes } from "./auth";
 import { db } from "./db";
 
 type tRPCOptions = Omit<
@@ -15,15 +16,26 @@ type tRPCOptions = Omit<
 
 type trpcContext = {
   db: typeof db;
-  user: DatabaseUserAttributes,
-  session: Session,
-}
+  user: DatabaseUserAttributes;
+};
 
 const t = initTRPC.context<trpcContext>().create({ transformer: SuperJSON });
 
 export const publicProcedure = t.procedure;
+export const protectedProcedure = t.procedure.use(
+  async function isAuthed(opts) {
+    const { ctx } = opts;
+    if (!ctx.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return opts.next({
+      ctx: {
+        ...ctx,
+      },
+    });
+  },
+);
 export const { router } = t;
-
 
 // trpc middleware server from @hono/trpc-server but setting context manually
 export const trpcServer = ({

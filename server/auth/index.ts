@@ -1,20 +1,12 @@
 import { Google } from "arctic";
 import { Lucia } from "lucia";
+import "dotenv/config";
 
 import { adapter } from "../db/src/schema";
 
 export interface DatabaseUserAttributes {
   id: string;
-  username: string | undefined;
   email: string;
-  picture: string;
-}
-
-export interface Session {
-	id: string;
-	userId: string;
-	expiresAt: Date;
-	fresh: boolean;
 }
 
 export const lucia = new Lucia(adapter, {
@@ -26,12 +18,9 @@ export const lucia = new Lucia(adapter, {
   },
   getUserAttributes: (attributes) => {
     return {
-      id: attributes.id,
-      email: attributes.email,
-      picture: attributes.picture,
-      username: attributes.username,
+      ...attributes
     }
-  }
+  },
 });
 
 declare module "lucia" {
