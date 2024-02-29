@@ -1,4 +1,5 @@
-import { Sessions, Users } from "./schema";
+import { ProviderAccounts, Sessions, Users } from "./schema";
 
-export const User = Users.$inferSelect;
-export const Session = Sessions.$inferSelect;
+export type User = typeof Users.$inferSelect;
+export type ProviderAccount = typeof ProviderAccounts.$inferSelect;
+export type Session = typeof Sessions.$inferSelect;

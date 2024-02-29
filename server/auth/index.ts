@@ -1,13 +1,7 @@
 import { Google } from "arctic";
 import { Lucia } from "lucia";
 import "dotenv/config";
-
 import { adapter } from "../db/src/schema";
-
-export interface DatabaseUserAttributes {
-  id: string;
-  email: string;
-}
 
 export const lucia = new Lucia(adapter, {
   sessionCookie: {
@@ -16,17 +10,11 @@ export const lucia = new Lucia(adapter, {
       secure: process.env.NODE_ENV === "production",
     },
   },
-  getUserAttributes: (attributes) => {
-    return {
-      ...attributes
-    }
-  },
 });
 
 declare module "lucia" {
   interface Register {
     Lucia: typeof lucia;
-    DatabaseUserAttributes: DatabaseUserAttributes;
   }
 }
 

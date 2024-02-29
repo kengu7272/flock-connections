@@ -6,7 +6,7 @@ export const baseRouter = router({
 
     return {
       loggedIn: true,
-      email: ctx.user.email,
+      username: ctx.user.username,
     };
   }),
 });

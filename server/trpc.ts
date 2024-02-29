@@ -5,8 +5,8 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import type { MiddlewareHandler } from "hono";
 import SuperJSON from "superjson";
 
-import { DatabaseUserAttributes } from "./auth";
 import { db } from "./db";
+import { User } from "./db/src/types";
 
 type tRPCOptions = Omit<
   FetchHandlerRequestOptions<AnyRouter>,
@@ -16,7 +16,7 @@ type tRPCOptions = Omit<
 
 type trpcContext = {
   db: typeof db;
-  user: DatabaseUserAttributes;
+  user: User;
 };
 
 const t = initTRPC.context<trpcContext>().create({ transformer: SuperJSON });

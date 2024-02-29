@@ -6,11 +6,12 @@ import {
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
+import { nanoid } from "nanoid";
+import { z } from "zod";
 
 import { google, lucia } from "../auth";
 import { db } from "../db";
-import { Users } from "../db/src/schema";
-import { z } from "zod";
+import { ProviderAccounts, Users } from "../db/src/schema";
 
 const hono = new Hono();
 
@@ -74,16 +75,15 @@ hono.get("/google/callback", async (c) => {
       sub: z.string(),
       picture: z.string(),
       email: z.string(),
-    })
+    });
 
     const user = userType.safeParse(await response.json());
-    if(!user.success) 
-      return c.status(400);
+    if (!user.success) return c.status(400);
 
     const [existingUser] = await db
       .select()
-      .from(Users)
-      .where(eq(Users.id, user.data.sub));
+      .from(ProviderAccounts)
+      .where(eq(ProviderAccounts.id, user.data.sub));
 
     if (existingUser) {
       const session = await lucia.createSession(existingUser.id, {});
@@ -97,9 +97,12 @@ hono.get("/google/callback", async (c) => {
       });
     }
 
-    await db
+    const { insertId } = await db
       .insert(Users)
-      .values({ id: user.data.sub, email: user.data.email, picture: user.data.picture });
+      .values({ username: `user ${nanoid(16)}`, email: user.data.email, picture: user.data.picture });
+    await db
+      .insert(ProviderAccounts)
+      .values({ id: user.data.sub, provider: "Google", userId: parseInt(insertId) });
 
     const session = await lucia.createSession(user.data.sub, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
