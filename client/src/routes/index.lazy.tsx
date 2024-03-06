@@ -20,7 +20,7 @@ function Index() {
           will require at least half of the group members (rounded up) to do anything important. This includes making 
           posts, adding/removing members, creating chats with other groups, and much more.
         </p>
-        <Link className="px-4 py-3 bg-sky-600 hover:bg-sky-700 rounded-md">Flock Connections</Link>
+        <Link href="/flock" className="px-4 py-3 bg-sky-600 hover:bg-sky-700 rounded-md">Flock Connections</Link>
       </main>
     </div>
   );

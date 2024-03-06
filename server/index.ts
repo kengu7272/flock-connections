@@ -5,7 +5,7 @@ import { appRouter } from "./routers/appRouter.ts";
 import { getCookie } from "hono/cookie";
 import { Session, verifyRequestOrigin } from "lucia";
 
-import login from "./api/login";
+import base from "./api/base";
 import { lucia } from "./auth";
 import { trpcServer } from "./trpc.ts";
 import { db } from "./db/index.ts";
@@ -73,22 +73,8 @@ hono.use(
   }),
 );
 
-// base routes
-hono.get("/test", async (c) => {
-  console.log(c.get("user"));
-  return c.text("test");
-})
-
-hono.get("/api/logout", async (c) => {
-  await lucia.invalidateSession(c.get("session")?.id ?? "");
-  c.header("Set-Cookie", lucia.createBlankSessionCookie().serialize(), {
-    append: true,
-  });
-  return c.redirect("/");
-});
-
-// external routes
-hono.route("api/login", login);
+// routes
+hono.route("/api", base);
 
 hono.notFound((c) => {
   return c.text("Nothing Here", 404);

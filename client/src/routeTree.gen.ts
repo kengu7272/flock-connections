@@ -11,14 +11,13 @@ import { Route as rootRoute } from './routes/__root'
 const RouteLazyImport = createFileRoute('/')()
 const LoginIndexLazyImport = createFileRoute('/login/')()
 const FlockIndexLazyImport = createFileRoute('/flock/')()
-const AboutIndexLazyImport = createFileRoute('/about/')()
 
 // Create/Update Routes
 
 const RouteLazyRoute = RouteLazyImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/route.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
 const LoginIndexLazyRoute = LoginIndexLazyImport.update({
   path: '/login/',
@@ -30,21 +29,12 @@ const FlockIndexLazyRoute = FlockIndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/flock/index.lazy').then((d) => d.Route))
 
-const AboutIndexLazyRoute = AboutIndexLazyImport.update({
-  path: '/about/',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/about/index.lazy').then((d) => d.Route))
-
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       preLoaderRoute: typeof RouteLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/about/': {
-      preLoaderRoute: typeof AboutIndexLazyImport
       parentRoute: typeof rootRoute
     }
     '/flock/': {
@@ -62,7 +52,6 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   RouteLazyRoute,
-  AboutIndexLazyRoute,
   FlockIndexLazyRoute,
   LoginIndexLazyRoute,
 ])
