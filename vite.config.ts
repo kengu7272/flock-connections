@@ -15,6 +15,8 @@ export default defineConfig({
     TanStackRouterVite({
       routesDirectory: "./client/src/routes/",
       generatedRouteTree: "./client/src/routeTree.gen.ts",
+      routeFileIgnorePrefix: "-",
+      quoteStyle: "single",
     }),
   ],
   optimizeDeps: {

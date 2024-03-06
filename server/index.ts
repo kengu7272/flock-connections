@@ -65,7 +65,6 @@ hono.use("*", async (c, next) => {
 
   return next();
 });
-
 hono.use(
   "/trpc/*",
   trpcServer({

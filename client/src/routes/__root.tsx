@@ -6,7 +6,7 @@ import { httpBatchLink } from "@trpc/client";
 import SuperJSON from "superjson";
 
 import { trpc } from "~/client/utils/trpc";
-import Navbar from "../-components/navbar";
+import Navbar from "./-components/navbar";
 
 export const Route = createRootRoute({
   component: () => {
