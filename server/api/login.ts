@@ -16,7 +16,7 @@ import { ProviderAccounts, Users } from "../db/src/schema";
 const hono = new Hono();
 
 hono.get("/google", async (c) => {
-  if (c.var.user) return c.redirect("/");
+  if (c.var.user) return c.redirect("/flock");
 
   const verifier = generateCodeVerifier();
   const state = generateState();
@@ -91,7 +91,7 @@ hono.get("/google/callback", async (c) => {
       return new Response(null, {
         status: 302,
         headers: {
-          Location: "/",
+          Location: "/flock",
           "Set-Cookie": sessionCookie.serialize(),
         },
       });
@@ -109,7 +109,7 @@ hono.get("/google/callback", async (c) => {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: "/",
+        Location: "/flock",
         "Set-Cookie": sessionCookie.serialize(),
       },
     });
