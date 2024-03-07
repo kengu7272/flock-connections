@@ -1,6 +1,6 @@
 import { Link, createLazyFileRoute } from "@tanstack/react-router";
 
-export const Route = createLazyFileRoute("/")({
+export const Route = createLazyFileRoute("/_notLoggedIn/")({
   component: Index,
 });
 

@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import Sidebar from "../components/sidebar";
 
 export const Route = createFileRoute("/_auth")({
   // let's do this for now and see if there is a better way later
@@ -11,6 +12,9 @@ export const Route = createFileRoute("/_auth")({
 
 function AuthLayout() {
   return (
-    <Outlet />
+    <div className="flex">
+      <Sidebar />
+      <Outlet />
+    </div>
   );
 }
