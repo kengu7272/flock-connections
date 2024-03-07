@@ -58,6 +58,7 @@ export default function Navbar() {
           {profileMenu && (
             <div className="absolute right-0 top-full mt-2 w-full min-w-32 rounded-lg bg-slate-700 py-1">
               <Link
+                onClick={() => setProfileMenu(false)}
                 className="block w-full rounded-lg py-3 text-center hover:bg-slate-600 active:bg-slate-500"
                 to="/profile"
               >

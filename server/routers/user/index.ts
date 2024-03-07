@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -15,11 +16,16 @@ export const userRouter = router({
         return;
 
       const set = {
-        ...(input.username ? { username: input.username } : {}),
-        ...(input.bio ? { bio: input.bio } : {}),
+        ...(input.username?.length ? { username: input.username } : {}),
+        ...(input.bio?.length ? { bio: input.bio } : {}),
+      }
+
+      if(input.username?.length) {
+        const existingUser = await ctx.db.select().from(Users).where(eq(Users.username, input.username ))
+        if(existingUser.length)
+          throw new TRPCError({ code: "CONFLICT", message: "Duplicate username" })
       }
   
-      console.log(input);
       await ctx.db
         .update(Users)
         .set(set)

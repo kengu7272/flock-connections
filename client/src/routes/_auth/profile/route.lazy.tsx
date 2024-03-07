@@ -20,10 +20,15 @@ function Profile() {
       utils.base.loggedIn.invalidate();
       toast.success("Updated Profile Successfully")
     },
-    onError: () => {
-      toast.error("Internal Server Error")
+    onError: (e) => {
+      toast.error(e.message)
     }
   });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProfile.mutate({ username, bio })
+  }
 
   return (
     <div className="w-full py-16">
@@ -42,10 +47,7 @@ function Profile() {
         </div>
         <form
           className="mx-auto w-[90%] space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            updateProfile.mutate({ bio, username });
-          }}
+          onSubmit={handleSubmit}
         >
           <div className="flex flex-col gap-2">
             <label>Username</label>
