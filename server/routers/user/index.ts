@@ -9,14 +9,20 @@ export const userRouter = router({
     return ctx.user;
   }),
   updateProfile: protectedProcedure
-    .input(z.object({ bio: z.string().optional(), }))
+    .input(z.object({ bio: z.string().max(255).optional(), username: z.string().max(24).optional() }))
     .mutation(async ({ ctx, input }) => {
-      if(!input.bio)
+      if(!input.bio?.length && !input.username?.length)
         return;
 
+      const set = {
+        ...(input.username ? { username: input.username } : {}),
+        ...(input.bio ? { bio: input.bio } : {}),
+      }
+  
+      console.log(input);
       await ctx.db
         .update(Users)
-        .set({ bio: input.bio, })
+        .set(set)
         .where(eq(Users.id, ctx.user.id));
     }),
 });
