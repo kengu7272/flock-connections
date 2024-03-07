@@ -12,9 +12,6 @@ function Profile() {
   const userInfo = trpc.user.userInfo.useQuery();
   const utils = trpc.useContext();
 
-  const inputClass =
-    "rounded-lg text-white px-2 py-1 bg-slate-800 h-12 flex-grow focus:outline-none";
-
   const [bio, setBio] = useState(userInfo.data?.bio ?? "");
   const updateProfile = trpc.user.updateProfile.useMutation({
     onSuccess: () => {
@@ -52,7 +49,7 @@ function Profile() {
           <div className="flex flex-col gap-2">
             <label>Bio</label>
             <textarea
-              className={inputClass}
+              className="rounded-lg text-white min-h-16 p-2 bg-slate-800 h-12 flex-grow focus:outline-none"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder={userInfo.data?.bio ?? ""}
