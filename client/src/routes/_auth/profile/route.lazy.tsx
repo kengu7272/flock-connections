@@ -37,7 +37,7 @@ function Profile() {
           <span>{userInfo.data?.username}</span>
           <span>{userInfo.data?.email}</span>
           <span>Joined {userInfo.data?.joined.toDateString()}</span>
-          <p className="text-sm text-slate-300">{userInfo.data?.bio}</p>
+          <p className="text-sm text-slate-300 w-3/4">{userInfo.data?.bio}</p>
         </div>
         <form
           className="mx-auto w-[90%] space-y-4"
@@ -53,6 +53,7 @@ function Profile() {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder={userInfo.data?.bio ?? ""}
+              maxLength={255}
             />
           </div>
           <input
