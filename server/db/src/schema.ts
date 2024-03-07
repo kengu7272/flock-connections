@@ -9,6 +9,7 @@ export const Users = mysqlTable("user", {
   email: varchar("email", { length: 255 }).unique().notNull(),
   joined: datetime("joined", { mode: "date" }).notNull().default(sql`CURRENT_TIMESTAMP`),
   picture: text("picture"),
+  bio: varchar("bio", { length: 255 }),
 })
 
 export const ProviderAccounts = mysqlTable("providerAccount", {

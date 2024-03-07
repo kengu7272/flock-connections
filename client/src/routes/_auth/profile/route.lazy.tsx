@@ -15,13 +15,16 @@ function Profile() {
   const inputClass =
     "rounded-lg text-white px-2 py-1 bg-slate-800 h-12 flex-grow focus:outline-none";
 
-  const [username, setUsername] = useState(userInfo.data?.username);
+  const [bio, setBio] = useState(userInfo.data?.bio ?? "");
   const updateProfile = trpc.user.updateProfile.useMutation({
     onSuccess: () => {
       userInfo.refetch();
       utils.base.loggedIn.invalidate();
-      toast("Updated username")
+      toast.success("Updated Profile Successfully")
     },
+    onError: () => {
+      toast.error("Internal Server Error")
+    }
   });
 
   return (
@@ -37,28 +40,28 @@ function Profile() {
           <span>{userInfo.data?.username}</span>
           <span>{userInfo.data?.email}</span>
           <span>Joined {userInfo.data?.joined.toDateString()}</span>
+          <p className="text-sm text-slate-300">{userInfo.data?.bio}</p>
         </div>
         <form
           className="mx-auto w-[90%] space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
-            updateProfile.mutate({ username: username });
+            updateProfile.mutate({ bio: bio });
           }}
         >
           <div className="flex flex-col gap-2">
-            <label>Username</label>
-            <input
+            <label>Bio</label>
+            <textarea
               className={inputClass}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              type="text"
-              placeholder={userInfo.data?.username}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder={userInfo.data?.bio ?? ""}
             />
           </div>
           <input
             type="submit"
             value="Update"
-            disabled={!username?.length}
+            disabled={!bio?.length}
             className="ml-auto block h-12 rounded-lg bg-sky-600 px-3 py-2 text-white hover:bg-sky-700 active:bg-sky-800 disabled:opacity-75"
           />
         </form>
