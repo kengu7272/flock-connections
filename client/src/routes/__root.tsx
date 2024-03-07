@@ -4,7 +4,8 @@ import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { httpBatchLink } from "@trpc/client";
 import SuperJSON from "superjson";
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { trpc } from "~/client/utils/trpc";
 import Navbar from "./-components/navbar";
 
@@ -26,6 +27,7 @@ export const Route = createRootRoute({
       <div className="min-h-screen text-slate-200 bg-slate-900">
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
+            <ToastContainer />
             <Navbar /> 
             <Outlet />
             <TanStackRouterDevtools />
