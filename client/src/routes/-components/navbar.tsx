@@ -12,12 +12,14 @@ export default function Navbar() {
 
   const links = {
     Home: "/",
-    About: "/about",
     Flock: "/flock",
   };
 
   return (
     <div className="relative flex items-center gap-4 border-b border-slate-700 bg-slate-800 py-7 lg:justify-center">
+      <span className="absolute left-14 text-xl font-bold lg:left-12">
+        Flock Connections
+      </span>
       <div className="hidden space-x-2 lg:flex">
         {Object.entries(links).map(([key, value]) => (
           <Link to={value} key={key} className="[&.active]:font-bold">
@@ -30,9 +32,14 @@ export default function Navbar() {
           <Menu className="h-8 w-8" />
         </button>
         {mobileLinks && (
-          <div className="absolute left-0 top-full gap-2 flex mt-2 rounded-lg min-w-32 flex-col bg-slate-700 py-1">
+          <div className="absolute left-0 top-full mt-2 flex min-w-32 flex-col gap-2 rounded-lg bg-slate-700 py-1">
             {Object.entries(links).map(([key, value]) => (
-              <Link onClick={() => setMobileLinks((prev) => !prev)} to={value} key={key} className="[&.active]:font-bold w-full px-2 rounded-lg py-3 text-center hover:bg-slate-600 active:bg-slate-500">
+              <Link
+                onClick={() => setMobileLinks((prev) => !prev)}
+                to={value}
+                key={key}
+                className="w-full rounded-lg px-2 py-3 text-center hover:bg-slate-600 active:bg-slate-500 [&.active]:font-bold"
+              >
                 {key}
               </Link>
             ))}
@@ -49,7 +56,13 @@ export default function Navbar() {
             <CircleUserRound className="h-8 w-8 lg:hidden" />
           </button>
           {profileMenu && (
-            <div className="absolute right-0 mt-2 top-full w-full min-w-32 rounded-lg bg-slate-700 py-1">
+            <div className="absolute right-0 top-full mt-2 w-full min-w-32 rounded-lg bg-slate-700 py-1">
+              <Link
+                className="block w-full rounded-lg py-3 text-center hover:bg-slate-600 active:bg-slate-500"
+                to="/profile"
+              >
+                Profile
+              </Link>
               <a
                 href="/api/logout"
                 className="block w-full rounded-lg py-3 text-center hover:bg-slate-600 active:bg-slate-500"
