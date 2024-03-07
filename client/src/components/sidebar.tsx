@@ -28,13 +28,13 @@ export default function Sidebar() {
       >
         <Menu />
       </button>
-      <span className={clsx({"absolute top-12 text-2xl font-bold hidden lg:block": true, "!block": mobileLinks})}>
+      <Link to="/" className={clsx({"absolute hover:text-slate-300 top-12 text-2xl font-bold hidden lg:block": true, "!block": mobileLinks})}>
         Flock Connections
-      </span>
+      </Link>
       <div className="flex w-full flex-col gap-2">
-        <Link onClick={linkOnClick} className={linkClass} to="/">
+        <Link onClick={linkOnClick} className={linkClass} to="/flock">
           <Home />
-          <span>Home</span>
+          <span>Flock</span>
         </Link>
         <Link onClick={linkOnClick} className={linkClass} to="/profile">
           <PersonStanding />
