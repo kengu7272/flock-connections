@@ -6,7 +6,6 @@ import { trpc } from "~/client/utils/trpc";
 
 export default function Navbar() {
   const { data: loggedInData } = trpc.base.loggedIn.useQuery();
-
   const [profileMenu, setProfileMenu] = useState(false);
   const [mobileLinks, setMobileLinks] = useState(false);
 

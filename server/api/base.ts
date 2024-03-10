@@ -18,13 +18,6 @@ hono.get("/logout", async (c) => {
   return c.redirect("/");
 });
 
-hono.get("/loggedIn", async (c) => {
-  if(c.get("user"))
-    return c.body(null, 200);  
-
-  return c.body(null, 400);
-})
-
 // external routes
 hono.route("/login", login)
 
