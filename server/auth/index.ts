@@ -1,6 +1,8 @@
 import { Google } from "arctic";
 import { Lucia } from "lucia";
+
 import "dotenv/config";
+
 import { adapter } from "../db/src/schema";
 
 export const lucia = new Lucia(adapter, {

@@ -1,17 +1,15 @@
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
-
-import { appRouter } from "./routers/appRouter.ts";
-
 import { getCookie } from "hono/cookie";
 import { Session, verifyRequestOrigin } from "lucia";
 
 import base from "./api/base";
 import { lucia } from "./auth";
-import { trpcServer } from "./trpc.ts";
 import { db } from "./db/index.ts";
 import { ProviderAccounts, Users } from "./db/src/schema.ts";
-import { eq } from "drizzle-orm";
 import { User } from "./db/src/types.ts";
+import { appRouter } from "./routers/appRouter.ts";
+import { trpcServer } from "./trpc.ts";
 
 const hono = new Hono<{
   Variables: {
@@ -39,7 +37,7 @@ hono.use("*", async (c, next) => {
   return next();
 });
 hono.use("*", async (c, next) => {
-  const sessionId = getCookie(c, lucia.sessionCookieName)?? null;
+  const sessionId = getCookie(c, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
     c.set("user", null);
     c.set("session", null);
@@ -58,7 +56,11 @@ hono.use("*", async (c, next) => {
     });
   }
 
-  const [dbUser] = await db.select({ user: Users }).from(Users).innerJoin(ProviderAccounts, eq(ProviderAccounts.userId, Users.id)).where(eq(ProviderAccounts.id, user?.id ?? ""))
+  const [dbUser] = await db
+    .select({ user: Users })
+    .from(Users)
+    .innerJoin(ProviderAccounts, eq(ProviderAccounts.userId, Users.id))
+    .where(eq(ProviderAccounts.id, user?.id ?? ""));
 
   c.set("user", dbUser?.user ?? null);
   c.set("session", session);

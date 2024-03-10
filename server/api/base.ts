@@ -1,7 +1,8 @@
 import { Hono } from "hono";
+
 import { lucia } from "../auth";
 import { Session, User } from "../db/src/types";
-import login from './login.ts';
+import login from "./login.ts";
 
 const hono = new Hono<{
   Variables: {
@@ -19,6 +20,6 @@ hono.get("/logout", async (c) => {
 });
 
 // external routes
-hono.route("/login", login)
+hono.route("/login", login);
 
 export default hono;

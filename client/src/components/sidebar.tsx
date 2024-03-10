@@ -43,7 +43,7 @@ export default function Sidebar() {
             "!flex": mobileLinks,
           })}
         >
-          <Link to="/" className="text-2xl hover:text-slate-300">
+          <Link to="/" className="text-2xl font-bold hover:text-slate-400">
             Flock Connections
           </Link>
           <span className="text-xl font-semibold text-slate-300">

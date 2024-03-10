@@ -99,10 +99,18 @@ hono.get("/google/callback", async (c) => {
 
     const { insertId } = await db
       .insert(Users)
-      .values({ username: `user ${nanoid(16)}`, email: user.data.email, picture: user.data.picture });
+      .values({
+        username: `user ${nanoid(16)}`,
+        email: user.data.email,
+        picture: user.data.picture,
+      });
     await db
       .insert(ProviderAccounts)
-      .values({ id: user.data.sub, provider: "Google", userId: parseInt(insertId) });
+      .values({
+        id: user.data.sub,
+        provider: "Google",
+        userId: parseInt(insertId),
+      });
 
     const session = await lucia.createSession(user.data.sub, {});
     const sessionCookie = lucia.createSessionCookie(session.id);

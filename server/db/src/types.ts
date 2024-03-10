@@ -1,4 +1,10 @@
-import { GroupMembers, Groups, ProviderAccounts, Sessions, Users } from "./schema";
+import {
+  GroupMembers,
+  Groups,
+  ProviderAccounts,
+  Sessions,
+  Users,
+} from "./schema";
 
 export type User = typeof Users.$inferSelect;
 export type ProviderAccount = typeof ProviderAccounts.$inferSelect;

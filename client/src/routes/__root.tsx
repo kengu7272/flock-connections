@@ -13,8 +13,11 @@ import { trpc } from "~/client/utils/trpc";
 export const Route = createRootRoute({
   notFoundComponent: () => {
     return (
-      <div className="h-screen w-full bg-slate-800 text-white flex flex-col justify-center items-center">
-        <span className="text-6xl mb-6"> Hey I think you might have messed up somewhere </span>
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-slate-800 text-white">
+        <span className="mb-6 text-6xl">
+          {" "}
+          Hey I think you might have messed up somewhere{" "}
+        </span>
         <span>Best Regards,</span>
         <span>Kevin</span>
       </div>

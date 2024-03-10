@@ -1,5 +1,6 @@
 import { z } from "zod";
-import "dotenv/config"
+
+import "dotenv/config";
 
 const zodEnv = z.object({
   // Database
@@ -15,8 +16,7 @@ const zodEnv = z.object({
 
 try {
   zodEnv.parse(process.env);
-} 
-catch (err) {
+} catch (err) {
   if (err instanceof z.ZodError) {
     const { fieldErrors } = err.flatten();
     const errorMessage = Object.entries(fieldErrors)
