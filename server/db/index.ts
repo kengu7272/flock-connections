@@ -9,5 +9,5 @@ const connection = new Client({
   password: process.env.DATABASE_PASSWORD,
 });
 
-// @ts-expect-error
+// @ts-expect-error because drizzle implements it wrong
 export const db = drizzle(connection);

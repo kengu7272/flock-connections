@@ -5,69 +5,85 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as NotLoggedInImport } from './routes/_notLoggedIn'
 import { Route as AuthImport } from './routes/_auth'
 
 // Create Virtual Routes
 
-const LoginRouteLazyImport = createFileRoute('/login')()
-const RouteLazyImport = createFileRoute('/')()
-const AuthProfileRouteLazyImport = createFileRoute('/_auth/profile')()
-const AuthFlockRouteLazyImport = createFileRoute('/_auth/flock')()
+const NotLoggedInIndexLazyImport = createFileRoute('/_notLoggedIn/')()
+const NotLoggedInLoginIndexLazyImport = createFileRoute(
+  '/_notLoggedIn/login/',
+)()
+const AuthProfileIndexLazyImport = createFileRoute('/_auth/profile/')()
+const AuthFlockIndexLazyImport = createFileRoute('/_auth/flock/')()
 
 // Create/Update Routes
 
-const LoginRouteLazyRoute = LoginRouteLazyImport.update({
-  path: '/login',
+const NotLoggedInRoute = NotLoggedInImport.update({
+  id: '/_notLoggedIn',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/login/route.lazy').then((d) => d.Route))
+} as any)
 
 const AuthRoute = AuthImport.update({
   id: '/_auth',
   getParentRoute: () => rootRoute,
 } as any)
 
-const RouteLazyRoute = RouteLazyImport.update({
+const NotLoggedInIndexLazyRoute = NotLoggedInIndexLazyImport.update({
   path: '/',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/route.lazy').then((d) => d.Route))
-
-const AuthProfileRouteLazyRoute = AuthProfileRouteLazyImport.update({
-  path: '/profile',
-  getParentRoute: () => AuthRoute,
+  getParentRoute: () => NotLoggedInRoute,
 } as any).lazy(() =>
-  import('./routes/_auth/profile/route.lazy').then((d) => d.Route),
+  import('./routes/_notLoggedIn/index.lazy').then((d) => d.Route),
 )
 
-const AuthFlockRouteLazyRoute = AuthFlockRouteLazyImport.update({
-  path: '/flock',
+const NotLoggedInLoginIndexLazyRoute = NotLoggedInLoginIndexLazyImport.update({
+  path: '/login/',
+  getParentRoute: () => NotLoggedInRoute,
+} as any).lazy(() =>
+  import('./routes/_notLoggedIn/login/index.lazy').then((d) => d.Route),
+)
+
+const AuthProfileIndexLazyRoute = AuthProfileIndexLazyImport.update({
+  path: '/profile/',
   getParentRoute: () => AuthRoute,
 } as any).lazy(() =>
-  import('./routes/_auth/flock/route.lazy').then((d) => d.Route),
+  import('./routes/_auth/profile/index.lazy').then((d) => d.Route),
+)
+
+const AuthFlockIndexLazyRoute = AuthFlockIndexLazyImport.update({
+  path: '/flock/',
+  getParentRoute: () => AuthRoute,
+} as any).lazy(() =>
+  import('./routes/_auth/flock/index.lazy').then((d) => d.Route),
 )
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      preLoaderRoute: typeof RouteLazyImport
-      parentRoute: typeof rootRoute
-    }
     '/_auth': {
       preLoaderRoute: typeof AuthImport
       parentRoute: typeof rootRoute
     }
-    '/login': {
-      preLoaderRoute: typeof LoginRouteLazyImport
+    '/_notLoggedIn': {
+      preLoaderRoute: typeof NotLoggedInImport
       parentRoute: typeof rootRoute
     }
-    '/_auth/flock': {
-      preLoaderRoute: typeof AuthFlockRouteLazyImport
+    '/_notLoggedIn/': {
+      preLoaderRoute: typeof NotLoggedInIndexLazyImport
+      parentRoute: typeof NotLoggedInImport
+    }
+    '/_auth/flock/': {
+      preLoaderRoute: typeof AuthFlockIndexLazyImport
       parentRoute: typeof AuthImport
     }
-    '/_auth/profile': {
-      preLoaderRoute: typeof AuthProfileRouteLazyImport
+    '/_auth/profile/': {
+      preLoaderRoute: typeof AuthProfileIndexLazyImport
       parentRoute: typeof AuthImport
+    }
+    '/_notLoggedIn/login/': {
+      preLoaderRoute: typeof NotLoggedInLoginIndexLazyImport
+      parentRoute: typeof NotLoggedInImport
     }
   }
 }
@@ -75,7 +91,9 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export const routeTree = rootRoute.addChildren([
-  RouteLazyRoute,
-  AuthRoute.addChildren([AuthFlockRouteLazyRoute, AuthProfileRouteLazyRoute]),
-  LoginRouteLazyRoute,
+  AuthRoute.addChildren([AuthFlockIndexLazyRoute, AuthProfileIndexLazyRoute]),
+  NotLoggedInRoute.addChildren([
+    NotLoggedInIndexLazyRoute,
+    NotLoggedInLoginIndexLazyRoute,
+  ]),
 ])

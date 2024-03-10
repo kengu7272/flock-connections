@@ -9,7 +9,6 @@ import SuperJSON from "superjson";
 import "react-toastify/dist/ReactToastify.css";
 
 import { trpc } from "~/client/utils/trpc";
-import Navbar from "./-components/navbar";
 
 export const Route = createRootRoute({
   notFoundComponent: () => {
@@ -39,7 +38,6 @@ export const Route = createRootRoute({
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <ToastContainer />
-            <Navbar />
             <Outlet />
             <TanStackRouterDevtools />
           </QueryClientProvider>

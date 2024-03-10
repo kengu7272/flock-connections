@@ -24,4 +24,16 @@ export const Sessions = mysqlTable("session", {
   expiresAt: datetime("expiresAt", { mode: "date" }).notNull(),
 });
 
+// Groups
+export const Groups = mysqlTable("group", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 24}).unique().notNull(),
+  description: varchar("description", { length: 500 }),
+})
+
+export const GroupMembers = mysqlTable("groupMember", {
+  userId: bigint("userId", { mode: "number", unsigned: true }),
+  groupId: bigint("groupId", { mode: "number", unsigned: true })
+})
+
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts)

@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 
 import { trpc } from "~/client/utils/trpc";
 
-export const Route = createLazyFileRoute("/_auth/profile")({
+export const Route = createLazyFileRoute("/_auth/profile/")({
   component: Profile,
 });
 
@@ -20,13 +20,18 @@ function Profile() {
       utils.base.loggedIn.invalidate();
       toast.success("Updated Profile Successfully")
     },
-    onError: () => {
-      toast.error("Internal Server Error")
+    onError: (e) => {
+      toast.error(e.message)
     }
   });
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProfile.mutate({ username, bio })
+  }
+
   return (
-    <div className="w-full py-16">
+    <div className="w-full py-24">
       <main className="items-center-center mx-auto flex w-[95%] flex-col space-y-4 rounded-lg bg-slate-700 py-6 lg:w-3/5 xl:w-2/5">
         <span className="block w-full text-center text-xl font-bold">Edit Profile</span>
         <div className="flex flex-col items-center gap-1">
@@ -42,15 +47,12 @@ function Profile() {
         </div>
         <form
           className="mx-auto w-[90%] space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            updateProfile.mutate({ bio, username });
-          }}
+          onSubmit={handleSubmit}
         >
           <div className="flex flex-col gap-2">
             <label>Username</label>
             <input
-              className="rounded-lg text-white min-h-16 p-2 bg-slate-800 h-12 flex-grow focus:outline-none"
+              className="rounded-lg text-white p-2 bg-slate-800 h-12 flex-grow focus:outline-none"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder={userInfo.data?.username ?? ""}
@@ -60,7 +62,7 @@ function Profile() {
           <div className="flex flex-col gap-2">
             <label>Bio</label>
             <textarea
-              className="rounded-lg text-white min-h-16 p-2 bg-slate-800 h-12 flex-grow focus:outline-none"
+              className="rounded-lg min-h-24 text-white p-2 bg-slate-800 h-12 flex-grow focus:outline-none"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder={userInfo.data?.bio ?? ""}
