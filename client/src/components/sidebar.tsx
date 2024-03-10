@@ -29,13 +29,13 @@ export default function Sidebar() {
       >
         <button
           className={clsx({
-            "lg:hidden": true,
-            "absolute right-4 top-4": mobileLinks,
-            "absolute left-4 top-4": !mobileLinks,
+            "lg:hidden absolute": true,
+            "right-4 top-4": mobileLinks,
+            "left-4 top-4": !mobileLinks,
           })}
           onClick={() => setMobileLinks((prev) => !prev)}
         >
-          <Menu />
+          <Menu className="h-7 w-7" />
         </button>
         <div
           className={clsx({
@@ -74,7 +74,7 @@ export default function Sidebar() {
       </div>
       <div
         className={clsx({
-          "px-4 py-6 lg:h-screen lg:w-72 lg:bg-slate-800": true,
+          "px-4 py-6 hidden lg:block lg:h-screen lg:w-72 lg:bg-slate-800": true,
           "h-screen !w-72 bg-slate-800": mobileLinks,
         })}
       ></div>
