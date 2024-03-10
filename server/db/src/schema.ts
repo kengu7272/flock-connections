@@ -40,12 +40,12 @@ export const Sessions = mysqlTable("session", {
 export const Groups = mysqlTable("group", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 24 }).unique().notNull(),
-  description: varchar("description", { length: 500 }),
+  description: varchar("description", { length: 500 }).notNull(),
 });
 
 export const GroupMembers = mysqlTable("groupMember", {
-  userId: bigint("userId", { mode: "number", unsigned: true }),
-  groupId: bigint("groupId", { mode: "number", unsigned: true }),
+  userId: bigint("userId", { mode: "number", unsigned: true }).primaryKey(),
+  groupId: bigint("groupId", { mode: "number", unsigned: true }).notNull(),
 });
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);
