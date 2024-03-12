@@ -1,15 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 
-import { GroupSchema } from "~/client/src/routes/_auth/group/index.lazy";
+import { FlockSchema } from "~/client/src/routes/_auth/flock/index.lazy";
 import { FlockMembers, Flocks } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 
-export const groupRouter = router({
+export const flockRouter = router({
   create: protectedProcedure
-    .input(GroupSchema)
+    .input(FlockSchema)
     .mutation(async ({ ctx, input }) => {
-      const [group] = await ctx.db
+      const [flock] = await ctx.db
         .select()
         .from(Flocks)
         .innerJoin(
@@ -19,10 +19,10 @@ export const groupRouter = router({
             eq(FlockMembers.userId, ctx.user.id),
           ),
         );
-      if (group)
+      if (flock)
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "User already has group",
+          message: "User already has flock",
         });
 
       if (!input.name.trim() || !input.description.trim())
@@ -43,7 +43,7 @@ export const groupRouter = router({
           if (e.message.includes("code = AlreadyExists"))
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "Duplicate Group Name",
+              message: "Duplicate Flock Name",
             });
         }
       }

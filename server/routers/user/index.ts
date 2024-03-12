@@ -38,13 +38,13 @@ export const userRouter = router({
 
       await ctx.db.update(Users).set(set).where(eq(Users.id, ctx.user.id));
     }),
-  getGroup: protectedProcedure.query(async ({ ctx }) => {
-    const [group] = await ctx.db
-      .select({ group: { name: Flocks.name } })
+  getFlock: protectedProcedure.query(async ({ ctx }) => {
+    const [flock] = await ctx.db
+      .select({ flock: { name: Flocks.name } })
       .from(FlockMembers)
       .innerJoin(Flocks, eq(Flocks.id, FlockMembers.flockId))
       .where(eq(FlockMembers.userId, ctx.user.id));
 
-    return group ?? null;
+    return flock ?? null;
   }),
 });

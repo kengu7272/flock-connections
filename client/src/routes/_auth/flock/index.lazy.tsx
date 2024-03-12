@@ -6,18 +6,18 @@ import { z } from "zod";
 
 import { trpc } from "~/client/utils/trpc";
 
-export const Route = createLazyFileRoute("/_auth/group/")({
-  component: Group,
+export const Route = createLazyFileRoute("/_auth/flock/")({
+  component: Flock,
 });
 
-export const GroupSchema = z
+export const FlockSchema = z
   .object({
     name: z.string().min(1).max(24),
     description: z.string().min(1).max(500),
   })
   .required();
-type GroupSchemaType = z.infer<typeof GroupSchema>;
-function Group() {
+type FlockSchemaType = z.infer<typeof FlockSchema>;
+function Flock() {
   const navigate = useNavigate();
 
   const inputClass =
@@ -27,19 +27,19 @@ function Group() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<GroupSchemaType>({
-    resolver: zodResolver(GroupSchema),
+  } = useForm<FlockSchemaType>({
+    resolver: zodResolver(FlockSchema),
   });
-  const create = trpc.group.create.useMutation({
+  const create = trpc.flock.create.useMutation({
     onSuccess: () => {
-      toast.success("Group Created");
-      navigate({ to: "/flock" });
+      toast.success("Flock Created");
+      navigate({ to: "/home" });
     },
     onError: (e) => {
       toast.error(e.message);
     },
   });
-  const onSubmit: SubmitHandler<GroupSchemaType> = (data) => {
+  const onSubmit: SubmitHandler<FlockSchemaType> = (data) => {
     if (!data.name.trim() || !data.description.trim()) {
       toast.error("Name & Description Must Contain Content");
       return;
@@ -52,7 +52,7 @@ function Group() {
     <div className="flex w-full justify-center px-2 py-24 lg:px-0">
       <main className="w-full rounded-lg bg-slate-800 h-fit px-8 py-4 lg:mx-96">
         <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-          <h1 className="text-3xl font-bold">Group Creation</h1>
+          <h1 className="text-3xl font-bold">Flock Creation</h1>
           <div className="flex flex-col gap-2">
             <label>Name</label>
             <input
@@ -70,7 +70,7 @@ function Group() {
             <label>Name</label>
             <textarea
               className={inputClass + " min-h-32"}
-              placeholder="Tell everyone a little about your group (Max 500)"
+              placeholder="Tell everyone a little about your flock (Max 500)"
               {...register("description")}
             />
             {errors.description && (
@@ -81,7 +81,7 @@ function Group() {
           </div>
           <input
             type="submit"
-            value="Create Group"
+            value="Create Flock"
             className="ml-auto block rounded-lg bg-sky-500 px-2 py-3 hover:bg-sky-600 active:bg-sky-700"
           />
         </form>

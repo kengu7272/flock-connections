@@ -7,7 +7,7 @@ import { trpc } from "~/client/utils/trpc";
 
 export default function Sidebar() {
   const { data: loggedInData } = trpc.base.loggedIn.useQuery();
-  const { data: group } = trpc.user.getGroup.useQuery();
+  const { data: flock } = trpc.user.getFlock.useQuery();
 
   const [mobileLinks, setMobileLinks] = useState(false);
   const linkClass = clsx({
@@ -50,13 +50,13 @@ export default function Sidebar() {
             {loggedInData?.username}
           </span>
           <span className="text-sm">
-            {group ? `(${group.group.name})` : "No Group"}
+            {flock ? `(${flock.flock.name})` : "No Flock"}
           </span>
         </div>
         <div className="flex w-full flex-col gap-2">
-          <Link onClick={linkOnClick} className={linkClass} to="/flock">
+          <Link onClick={linkOnClick} className={linkClass} to="/home">
             <Home />
-            <span>Flock</span>
+            <span>Home</span>
           </Link>
           <Link onClick={linkOnClick} className={linkClass} to="/profile">
             <PersonStanding />
