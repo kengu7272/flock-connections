@@ -1,6 +1,12 @@
-import { z } from "zod";
+import { TypeOf, z } from "zod";
 
 import "dotenv/config";
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv extends TypeOf<typeof zodEnv> {}
+  }
+}
 
 const zodEnv = z.object({
   // Database

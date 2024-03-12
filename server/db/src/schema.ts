@@ -36,16 +36,16 @@ export const Sessions = mysqlTable("session", {
   expiresAt: datetime("expiresAt", { mode: "date" }).notNull(),
 });
 
-// Groups
-export const Groups = mysqlTable("group", {
+// Flocks
+export const Flocks = mysqlTable("flock", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 24 }).unique().notNull(),
   description: varchar("description", { length: 500 }).notNull(),
 });
 
-export const GroupMembers = mysqlTable("groupMember", {
+export const FlockMembers = mysqlTable("flockMember", {
   userId: bigint("userId", { mode: "number", unsigned: true }).primaryKey(),
-  groupId: bigint("groupId", { mode: "number", unsigned: true }).notNull(),
+  flockId: bigint("flockId", { mode: "number", unsigned: true }).notNull(),
 });
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);

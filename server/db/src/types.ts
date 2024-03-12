@@ -1,6 +1,6 @@
 import {
-  GroupMembers,
-  Groups,
+  FlockMembers,
+  Flocks,
   ProviderAccounts,
   Sessions,
   Users,
@@ -9,5 +9,5 @@ import {
 export type User = typeof Users.$inferSelect;
 export type ProviderAccount = typeof ProviderAccounts.$inferSelect;
 export type Session = typeof Sessions.$inferSelect;
-export type Group = typeof Groups.$inferSelect;
-export type GroupMember = typeof GroupMembers.$inferSelect;
+export type Group = typeof Flocks.$inferSelect;
+export type GroupMember = typeof FlockMembers.$inferSelect;

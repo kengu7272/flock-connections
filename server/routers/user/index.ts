@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { GroupMembers, Groups, Users } from "~/server/db/src/schema";
+import { FlockMembers, Flocks, Users } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 
 export const userRouter = router({
@@ -40,10 +40,10 @@ export const userRouter = router({
     }),
   getGroup: protectedProcedure.query(async ({ ctx }) => {
     const [group] = await ctx.db
-      .select({ group: { name: Groups.name } })
-      .from(GroupMembers)
-      .innerJoin(Groups, eq(Groups.id, GroupMembers.groupId))
-      .where(eq(GroupMembers.userId, ctx.user.id));
+      .select({ group: { name: Flocks.name } })
+      .from(FlockMembers)
+      .innerJoin(Flocks, eq(Flocks.id, FlockMembers.flockId))
+      .where(eq(FlockMembers.userId, ctx.user.id));
 
     return group ?? null;
   }),

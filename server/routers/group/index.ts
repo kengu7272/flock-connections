@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 
 import { GroupSchema } from "~/client/src/routes/_auth/group/index.lazy";
-import { GroupMembers, Groups } from "~/server/db/src/schema";
+import { FlockMembers, Flocks } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 
 export const groupRouter = router({
@@ -11,12 +11,12 @@ export const groupRouter = router({
     .mutation(async ({ ctx, input }) => {
       const [group] = await ctx.db
         .select()
-        .from(Groups)
+        .from(Flocks)
         .innerJoin(
-          GroupMembers,
+          FlockMembers,
           and(
-            eq(GroupMembers.groupId, Groups.id),
-            eq(GroupMembers.userId, ctx.user.id),
+            eq(FlockMembers.flockId, Flocks.id),
+            eq(FlockMembers.userId, ctx.user.id),
           ),
         );
       if (group)
@@ -33,11 +33,11 @@ export const groupRouter = router({
 
       try {
         const { insertId } = await ctx.db
-          .insert(Groups)
+          .insert(Flocks)
           .values({ name: input.name, description: input.description });
         await ctx.db
-          .insert(GroupMembers)
-          .values({ groupId: parseInt(insertId), userId: ctx.user.id });
+          .insert(FlockMembers)
+          .values({ flockId: parseInt(insertId), userId: ctx.user.id });
       } catch (e) {
         if (e instanceof Error) {
           if (e.message.includes("code = AlreadyExists"))

@@ -6,7 +6,10 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended"
+    "plugin:react/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -17,7 +20,10 @@
   "ignorePatterns": ["/client/src/routeTree.gen.ts"],
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "no-irregular-whitespace": "off"
+    "no-irregular-whitespace": "off",
+    "import/no-named-as-default": "off",
+    "import/default": "off",
+    "import/no-named-as-default-member": "off"
   },
   "settings": {
     "import/resolver": {
