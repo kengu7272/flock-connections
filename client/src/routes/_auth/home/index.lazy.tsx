@@ -2,11 +2,11 @@ import { createLazyFileRoute, Link } from "@tanstack/react-router";
 
 import { trpc } from "~/client/utils/trpc";
 
-export const Route = createLazyFileRoute("/_auth/flock/")({
-  component: Flock,
+export const Route = createLazyFileRoute("/_auth/home/")({
+  component: Home,
 });
 
-function Flock() {
+function Home() {
   const data = trpc.user.getGroup.useQuery();
 
   return (
