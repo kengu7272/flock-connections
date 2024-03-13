@@ -91,7 +91,7 @@ hono.get("/google/callback", async (c) => {
       return new Response(null, {
         status: 302,
         headers: {
-          Location: "/flock",
+          Location: "/home",
           "Set-Cookie": sessionCookie.serialize(),
         },
       });
