@@ -27,3 +27,6 @@ build/
 
 # Tailwind CSS build output
 tailwind.css
+
+# Docker peristed db data
+mysqlData

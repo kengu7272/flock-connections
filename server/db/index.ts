@@ -1,14 +1,12 @@
-import { Client } from "@planetscale/database";
-import { drizzle } from "drizzle-orm/planetscale-serverless";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 
-import "dotenv/config";
-
-// create the connection
-const connection = new Client({
-  host: process.env.DATABASE_HOST,
-  username: process.env.DATABASE_USERNAME,
-  password: process.env.DATABASE_PASSWORD,
+const connection = mysql.createPool({
+  host: "localhost",
+  port: 3306,
+  user: "root",
+  database: "flock",
+  password: "flockpassword",
 });
 
-// @ts-expect-error because drizzle implements it wrong
 export const db = drizzle(connection);

@@ -32,12 +32,12 @@ export const flockRouter = router({
         });
 
       try {
-        const { insertId } = await ctx.db
+        const [{ insertId }] = await ctx.db
           .insert(Flocks)
           .values({ name: input.name, description: input.description });
         await ctx.db
           .insert(FlockMembers)
-          .values({ flockId: parseInt(insertId), userId: ctx.user.id });
+          .values({ flockId: insertId, userId: ctx.user.id });
       } catch (e) {
         if (e instanceof Error) {
           if (e.message.includes("code = AlreadyExists"))

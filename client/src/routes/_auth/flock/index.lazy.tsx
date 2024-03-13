@@ -50,7 +50,7 @@ function Flock() {
 
   return (
     <div className="flex w-full justify-center px-2 py-24 lg:px-0">
-      <main className="w-full rounded-lg bg-slate-800 h-fit px-8 py-4 lg:mx-96">
+      <main className="h-fit w-full rounded-lg bg-slate-800 px-8 py-4 lg:mx-96">
         <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
           <h1 className="text-3xl font-bold">Flock Creation</h1>
           <div className="flex flex-col gap-2">

@@ -29,7 +29,7 @@ export default function Sidebar() {
       >
         <button
           className={clsx({
-            "lg:hidden absolute": true,
+            "absolute lg:hidden": true,
             "right-4 top-4": mobileLinks,
             "left-4 top-4": !mobileLinks,
           })}
@@ -74,7 +74,7 @@ export default function Sidebar() {
       </div>
       <div
         className={clsx({
-          "px-4 py-6 hidden lg:block lg:h-screen lg:w-72 lg:bg-slate-800": true,
+          "hidden px-4 py-6 lg:block lg:h-screen lg:w-72 lg:bg-slate-800": true,
           "h-screen !w-72 bg-slate-800": mobileLinks,
         })}
       ></div>

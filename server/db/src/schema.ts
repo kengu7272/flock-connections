@@ -26,13 +26,16 @@ export const ProviderAccounts = mysqlTable("providerAccount", {
   id: varchar("id", { length: 255 }).primaryKey(),
   userId: bigint("userId", { mode: "number", unsigned: true })
     .notNull()
-    .unique(),
+    .unique()
+    .references(() => Users.id, { onDelete: "cascade" }),
   provider: varchar("provider", { length: 255 }).notNull(),
 });
 
 export const Sessions = mysqlTable("session", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("userId", { length: 255 }).notNull(),
+  userId: varchar("userId", { length: 255 })
+    .notNull()
+    .references(() => ProviderAccounts.id, { onDelete: "cascade" }),
   expiresAt: datetime("expiresAt", { mode: "date" }).notNull(),
 });
 
@@ -44,8 +47,12 @@ export const Flocks = mysqlTable("flock", {
 });
 
 export const FlockMembers = mysqlTable("flockMember", {
-  userId: bigint("userId", { mode: "number", unsigned: true }).primaryKey(),
-  flockId: bigint("flockId", { mode: "number", unsigned: true }).notNull(),
+  userId: bigint("userId", { mode: "number", unsigned: true })
+    .primaryKey()
+    .references(() => Users.id, { onDelete: "cascade" }),
+  flockId: bigint("flockId", { mode: "number", unsigned: true })
+    .notNull()
+    .references(() => Flocks.id, { onDelete: "cascade" }),
 });
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);

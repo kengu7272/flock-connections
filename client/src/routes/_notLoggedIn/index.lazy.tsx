@@ -25,7 +25,7 @@ function Index() {
         </p>
         <Link
           to="/home"
-          className="rounded-md bg-sky-600 px-4 py-3 hover:bg-sky-700 active:bg-sky-800 font-semibold"
+          className="rounded-md bg-sky-600 px-4 py-3 font-semibold hover:bg-sky-700 active:bg-sky-800"
         >
           Flock Connections
         </Link>
