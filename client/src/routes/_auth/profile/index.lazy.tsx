@@ -10,6 +10,7 @@ export const Route = createLazyFileRoute("/_auth/profile/")({
 
 function Profile() {
   const userInfo = trpc.user.userInfo.useQuery();
+  const flock = trpc.user.getFlock.useQuery();
   const utils = trpc.useContext();
 
   const [username, setUsername] = useState(userInfo.data?.username ?? "");
@@ -33,18 +34,19 @@ function Profile() {
   return (
     <div className="w-full py-24">
       <main className="items-center-center mx-auto flex w-[95%] flex-col space-y-4 rounded-lg bg-slate-700 py-6 lg:w-3/5 xl:w-2/5">
-        <span className="block w-full text-center text-xl font-bold">
+        <span className="block w-full text-center text-2xl font-bold">
           Edit Profile
         </span>
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-2">
           <img
             src={userInfo.data?.picture ?? ""}
-            className="h-16 w-16"
+            className="h-16 w-16 rounded-full"
             alt="Profile Picture"
           />
-          <span>{userInfo.data?.username}</span>
-          <span>{userInfo.data?.email}</span>
-          <span>Joined {userInfo.data?.joined.toDateString()}</span>
+          <span className="text-lg font-semibold">{userInfo.data?.username}</span>
+          {flock.data && <span className="font-semibold">{flock.data.flock.name}</span>}
+          <span className="text-sm">{userInfo.data?.email}</span>
+          <span className="text-sm">Joined {userInfo.data?.joined.toDateString()}</span>
           <p className="w-3/4 text-center text-sm text-slate-300">
             {userInfo.data?.bio}
           </p>
