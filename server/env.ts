@@ -14,6 +14,7 @@ const zodEnv = z.object({
   DATABASE_USERNAME: z.string(),
   DATABASE_PASSWORD: z.string(),
   DATABASE_URL: z.string(),
+  DATABASE: z.string(),
 
   // Google
   GOOGLE_CLIENT_ID: z.string(),
