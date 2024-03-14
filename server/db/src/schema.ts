@@ -18,7 +18,7 @@ export const Users = mysqlTable("user", {
   joined: datetime("joined", { mode: "date" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  picture: text("picture"),
+  picture: text("picture").default("").notNull(),
   bio: varchar("bio", { length: 255 }),
 });
 
@@ -42,8 +42,12 @@ export const Sessions = mysqlTable("session", {
 // Flocks
 export const Flocks = mysqlTable("flock", {
   id: serial("id").primaryKey(),
+  picture: text("picture").default("").notNull(),
   name: varchar("name", { length: 24 }).unique().notNull(),
   description: varchar("description", { length: 500 }).notNull(),
+  createdAt: datetime("createdAt", { mode: "date" })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const FlockMembers = mysqlTable("flockMember", {

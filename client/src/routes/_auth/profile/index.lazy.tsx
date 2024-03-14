@@ -43,10 +43,16 @@ function Profile() {
             className="h-16 w-16 rounded-full"
             alt="Profile Picture"
           />
-          <span className="text-lg font-semibold">{userInfo.data?.username}</span>
-          {flock.data && <span className="font-semibold">{flock.data.flock.name}</span>}
+          <span className="text-lg font-semibold">
+            {userInfo.data?.username}
+          </span>
+          {flock.data && (
+            <span className="font-semibold">{flock.data.flock.name}</span>
+          )}
           <span className="text-sm">{userInfo.data?.email}</span>
-          <span className="text-sm">Joined {userInfo.data?.joined.toDateString()}</span>
+          <span className="text-sm">
+            Joined {userInfo.data?.joined.toDateString()}
+          </span>
           <p className="w-3/4 text-center text-sm text-slate-300">
             {userInfo.data?.bio}
           </p>

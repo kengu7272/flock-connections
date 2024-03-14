@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { Home, LogOut, Menu, PersonStanding } from "lucide-react";
+import { Home, LogOut, Menu, User, Users } from "lucide-react";
 
 import { trpc } from "~/client/utils/trpc";
 
@@ -58,8 +58,18 @@ export default function Sidebar() {
             <Home />
             <span>Home</span>
           </Link>
+          {flock && (
+            <Link
+              onClick={linkOnClick}
+              className={linkClass}
+              to={`/flock/${flock.flock.name}`}
+            >
+              <Users />
+              <span>Flock</span>
+            </Link>
+          )}
           <Link onClick={linkOnClick} className={linkClass} to="/profile">
-            <PersonStanding />
+            <User />
             <span>Profile</span>
           </Link>
           <a

@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import { client } from "~/client/utils/trpc";
-import Sidebar from "../components/sidebar";
+import Sidebar from "../components/Sidebar";
 
 export const Route = createFileRoute("/_auth")({
   // let's do this for now and see if there is a better way later
