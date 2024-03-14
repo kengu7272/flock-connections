@@ -2,8 +2,11 @@ import { DrizzleMySQLAdapter } from "@lucia-auth/adapter-drizzle";
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   datetime,
+  mysqlEnum,
   mysqlTable,
+  primaryKey,
   serial,
   text,
   varchar,
@@ -58,5 +61,34 @@ export const FlockMembers = mysqlTable("flockMember", {
     .notNull()
     .references(() => Flocks.id, { onDelete: "cascade" }),
 });
+
+const MemberActions = ["INVITE", "KICK"] as const;
+export const FlockMemberActions = mysqlTable("flockMemberActions", {
+  id: serial("id").primaryKey(),
+  userId: bigint("userId", { mode: "number", unsigned: true }) // who the action pertains to (ex. inviting this user)
+    .notNull()
+    .references(() => Users.id, { onDelete: "cascade" }),
+  flockId: bigint("flockId", { mode: "number", unsigned: true })
+    .notNull()
+    .references(() => Flocks.id, { onDelete: "cascade" }),
+  creator: bigint("creator", { mode: "number", unsigned: true })
+    .notNull()
+    .references(() => Users.id, { onDelete: "cascade" }),
+  type: mysqlEnum("type", MemberActions).notNull(),
+  active: boolean("status").notNull().default(true),
+});
+
+export const FlockMemberVotes = mysqlTable(
+  "flockMemberVotes",
+  {
+    actionId: bigint("actionId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => FlockMemberActions.id, { onDelete: "cascade" }),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .references(() => Users.id, { onDelete: "cascade" }),
+    vote: boolean("vote").notNull(),
+  },
+  (table) => ({ pk: primaryKey({ columns: [table.actionId, table.userId] }) }),
+);
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);

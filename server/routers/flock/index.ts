@@ -3,7 +3,12 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { FlockSchema } from "~/client/src/routes/_auth/flock/index.lazy";
-import { FlockMembers, Flocks, Users } from "~/server/db/src/schema";
+import {
+  FlockMemberActions,
+  FlockMembers,
+  Flocks,
+  Users,
+} from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 
 export const flockRouter = router({
@@ -90,5 +95,44 @@ export const flockRouter = router({
       if (!info) throw new TRPCError({ code: "UNAUTHORIZED" });
 
       return info;
+    }),
+  createKick: protectedProcedure
+    .input(z.object({ username: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      if(!ctx.flock)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "You're not in a Flock" });
+
+      const [user] = await ctx.db
+        .select({ id: Users.id })
+        .from(Users)
+        .where(eq(Users.username, input.username));
+      if (!user)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "User not found" });
+
+      // check if a kick is already active
+      const [kick] = await ctx.db
+        .select()
+        .from(FlockMemberActions)
+        .innerJoin(Users, eq(Users.id, FlockMemberActions.userId))
+        .where(
+          and(
+            eq(FlockMemberActions.flockId, ctx.flock.id),
+            eq(Users.id, user.id),
+            eq(FlockMemberActions.active, true),
+            eq(FlockMemberActions.type, "KICK"),
+          ),
+        );
+      if (kick)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Outstanding Vote Session",
+        });
+
+      await ctx.db.insert(FlockMemberActions).values({
+        flockId: ctx.flock.id,
+        userId: user.id,
+        type: "KICK",
+        creator: ctx.user.id,
+      });
     }),
 });
