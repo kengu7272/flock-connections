@@ -68,7 +68,9 @@ const MemberInviteSchema = z.object({
     .string()
     .min(1)
     .max(24)
-    .refine((val) => !val.includes(" ")),
+    .refine((val) => !val.includes(" "), {
+      message: "Usernames don't include spaces",
+    }),
 });
 type MemberInviteSchemaType = z.infer<typeof MemberInviteSchema>;
 const Members = ({
@@ -118,16 +120,18 @@ const Members = ({
         className="flex items-center gap-2 rounded-lg bg-slate-600 p-2"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <input
-          placeholder="Username"
-          className="flex-grow rounded-lg bg-slate-600 p-2 text-white focus:bg-slate-700 focus:outline-none"
-          {...register("username")}
-        />
-        {errors.username && (
-          <span className="text-sm text-red-500">
-            {errors.username.message}
-          </span>
-        )}
+        <div className="w-full flex flex-col">
+          <input
+            placeholder="Username"
+            className="flex-grow rounded-lg bg-slate-600 p-2 text-white focus:bg-slate-700 focus:outline-none"
+            {...register("username")}
+          />
+          {errors.username && (
+            <span className="text-sm text-red-500 block">
+              {errors.username.message}
+            </span>
+          )}
+        </div>
         <input
           type="submit"
           value="Invite User"

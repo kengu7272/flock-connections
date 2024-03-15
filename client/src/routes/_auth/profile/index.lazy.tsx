@@ -14,12 +14,12 @@ export const ProfileSchema = z.object({
   bio: z
     .string()
     .max(255)
-    .refine((val) => !val.length || !!val.trim())
+    .refine((val) => !val.length || !!val.trim(), { message: "Empty Content" })
     .optional(),
   username: z
     .string()
     .max(16)
-    .refine((val) => !val.includes(" "))
+    .refine((val) => !val.includes(" "), { message: "Spaces aren't allowed" })
     .optional(),
 });
 type ProfileSchemaType = z.infer<typeof ProfileSchema>;
@@ -118,7 +118,9 @@ function Profile() {
               placeholder={userInfo.data?.bio ?? ""}
               {...register("bio")}
             />
-
+            {errors.bio && (
+              <span className="text-sm text-red-500">{errors.bio.message}</span>
+            )}
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -128,9 +130,6 @@ function Profile() {
             >
               Remove Bio
             </button>
-            {errors.bio && (
-              <span className="text-sm text-red-500">{errors.bio.message}</span>
-            )}
           </div>
           <input
             type="submit"
