@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 
+import { ProfileSchema } from "~/client/src/routes/_auth/profile/index.lazy";
 import { FlockMembers, Flocks, Users } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 
@@ -10,14 +10,10 @@ export const userRouter = router({
     return ctx.user;
   }),
   updateProfile: protectedProcedure
-    .input(
-      z.object({
-        bio: z.string().max(255).optional(),
-        username: z.string().max(24).optional(),
-      }),
-    )
+    .input(ProfileSchema)
     .mutation(async ({ ctx, input }) => {
-      if (!input.bio?.length && !input.username?.length) return;
+      if (!input.bio?.length && !input.username?.length)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "No Content" });
 
       const set = {
         ...(input.username?.length ? { username: input.username } : {}),
@@ -46,5 +42,11 @@ export const userRouter = router({
       .where(eq(FlockMembers.userId, ctx.user.id));
 
     return flock ?? null;
+  }),
+  clearBio: protectedProcedure.mutation(async ({ ctx }) => {
+    await ctx.db
+      .update(Users)
+      .set({ bio: "" })
+      .where(eq(Users.id, ctx.user.id));
   }),
 });
