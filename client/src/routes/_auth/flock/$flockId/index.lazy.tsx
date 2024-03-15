@@ -19,6 +19,17 @@ function Flock() {
 
   const [selected, setSelected] = useState("Members");
 
+  const sections = [
+    {
+      name: "Members",
+      component: <Members members={members} />,
+    },
+    {
+      name: "Voting",
+      component: <Voting />,
+    },
+  ];
+
   return (
     <div className="w-full py-24">
       <main className="items-center-center mx-auto flex w-[95%] flex-col space-y-4 rounded-lg bg-slate-700 px-4 py-6 lg:w-3/5 xl:w-2/5">
@@ -26,19 +37,24 @@ function Flock() {
           <img className="h-16 w-16 rounded-full" src={groupInfo.picture} />
           <span className="text-2xl font-bold">{flockId}</span>
         </div>
-        <div>
-          <button
-            onClick={() => setSelected("Members")}
-            className={clsx({
-              "px-2 text-lg hover:text-slate-100 active:text-slate-200": true,
-              "font-semibold": selected === "Members",
-            })}
-          >
-            Members
-          </button>
-        </div>
         <p className="text-sm">{groupInfo.description}</p>
-        {selected === "Members" && <Members members={members} />}
+        <div>
+          {sections.map((section) => (
+            <button
+              onClick={() => setSelected(section.name)}
+              className={clsx({
+                "px-2 text-lg hover:text-slate-100 active:text-slate-200": true,
+                "font-semibold": selected === section.name,
+              })}
+            >
+              {section.name}
+            </button>
+          ))}
+        </div>
+
+        {sections.map(
+          (section) => selected === section.name && section.component,
+        )}
       </main>
     </div>
   );
@@ -96,4 +112,8 @@ const Members = ({
       </div>
     </div>
   );
+};
+
+const Voting = () => {
+  return <div></div>;
 };
