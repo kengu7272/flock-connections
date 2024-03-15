@@ -12,8 +12,8 @@ export const Route = createLazyFileRoute("/_auth/flock/")({
 
 export const FlockSchema = z
   .object({
-    name: z.string().min(1).max(24),
-    description: z.string().min(1).max(500),
+    name: z.string().min(1).max(24).refine((val) => !val.includes(' '), { message: "Name cannot contain spaces"}),
+    description: z.string().min(1).max(500).refine((val) => !!val.trim(), { message: "Must contain content" }),
   })
   .required();
 type FlockSchemaType = z.infer<typeof FlockSchema>;
@@ -40,11 +40,6 @@ function Flock() {
     },
   });
   const onSubmit: SubmitHandler<FlockSchemaType> = (data) => {
-    if (!data.name.trim() || !data.description.trim()) {
-      toast.error("Name & Description Must Contain Content");
-      return;
-    }
-
     create.mutate({ description: data.description, name: data.name });
   };
 
