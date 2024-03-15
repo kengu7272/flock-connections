@@ -11,7 +11,7 @@ function Login() {
         <h2 className="text-xl">Login with Google</h2>
         <a
           href="/api/login/google"
-          className="mx-auto rounded-lg bg-red-700 hover:bg-red-800 active:bg-red-900 px-6 py-3 text-slate-100 font-semibold"
+          className="mx-auto rounded-lg bg-red-700 px-6 py-3 font-semibold text-slate-100 hover:bg-red-800 active:bg-red-900"
         >
           Google
         </a>

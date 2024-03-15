@@ -6,7 +6,7 @@ import type { MiddlewareHandler } from "hono";
 import SuperJSON from "superjson";
 
 import { db } from "./db";
-import { User } from "./db/src/types";
+import { Flock, User } from "./db/src/types";
 
 type tRPCOptions = Omit<
   FetchHandlerRequestOptions<AnyRouter>,
@@ -17,6 +17,7 @@ type tRPCOptions = Omit<
 type trpcContext = {
   db: typeof db;
   user: User;
+  flock: Flock | null;
 };
 
 const t = initTRPC.context<trpcContext>().create({ transformer: SuperJSON });
@@ -51,6 +52,7 @@ export const trpcServer = ({
         return {
           db,
           user: c.get("user"),
+          flock: c.get("flock"),
           session: c.get("session"),
         };
       },

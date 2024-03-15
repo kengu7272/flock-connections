@@ -4,7 +4,11 @@ export default defineConfig({
   schema: "./server/db/src/schema.ts",
   driver: "mysql2",
   dbCredentials: {
-    uri: process.env.DATABASE_URL,
+    host: "localhost",
+    port: 3306,
+    user: "root",
+    database: "flock",
+    password: "flockpassword",
   },
   verbose: true,
   strict: true,

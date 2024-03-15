@@ -11,7 +11,7 @@ export default function Navbar() {
 
   const links = {
     Home: "/",
-    Flock: "/flock",
+    App: "/home",
   };
 
   return (

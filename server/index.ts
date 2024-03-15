@@ -6,14 +6,20 @@ import { Session, verifyRequestOrigin } from "lucia";
 import base from "./api/base";
 import { lucia } from "./auth";
 import { db } from "./db/index.ts";
-import { ProviderAccounts, Users } from "./db/src/schema.ts";
-import { User } from "./db/src/types.ts";
+import {
+  FlockMembers,
+  Flocks,
+  ProviderAccounts,
+  Users,
+} from "./db/src/schema.ts";
+import { Flock, User } from "./db/src/types.ts";
 import { appRouter } from "./routers/appRouter.ts";
 import { trpcServer } from "./trpc.ts";
 
 const hono = new Hono<{
   Variables: {
     user: User | null;
+    flock: Flock | null;
     session: Session | null;
   };
 }>();
@@ -57,12 +63,15 @@ hono.use("*", async (c, next) => {
   }
 
   const [dbUser] = await db
-    .select({ user: Users })
+    .select({ user: Users, flock: Flocks })
     .from(Users)
     .innerJoin(ProviderAccounts, eq(ProviderAccounts.userId, Users.id))
+    .leftJoin(FlockMembers, eq(FlockMembers.userId, Users.id))
+    .leftJoin(Flocks, eq(Flocks.id, FlockMembers.flockId))
     .where(eq(ProviderAccounts.id, user?.id ?? ""));
 
   c.set("user", dbUser?.user ?? null);
+  c.set("flock", dbUser.flock ?? null);
   c.set("session", session);
 
   return next();

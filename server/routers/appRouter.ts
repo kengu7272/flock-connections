@@ -1,12 +1,12 @@
 import { router } from "../trpc";
 import { baseRouter } from "./base";
-import { groupRouter } from "./group";
+import { flockRouter } from "./flock";
 import { userRouter } from "./user";
 
 export const appRouter = router({
   base: baseRouter,
   user: userRouter,
-  group: groupRouter,
+  flock: flockRouter,
 });
 
 export type AppRouter = typeof appRouter;

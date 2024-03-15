@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "push": "drizzle-kit push:mysql",
-    "lint": "eslint \"**/*.{ts,tsx}\"",
+    "check-types": "tsc --noemit",
+    "eslint": "eslint",
+    "lint": "pnpm run eslint && pnpm run check-types",
     "format": "prettier --write ."
   },
   "dependencies": {
@@ -41,6 +43,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.0.2",
     "@tanstack/router-vite-plugin": "^1.14.1",
     "@types/node": "^20.11.16",

@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql:latest
+    container_name: flock_database
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "flockpassword"
+      MYSQL_DATABASE: "flock"
+    volumes:
+      - ~/Documents/dockerVolumes/mysqlData:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+
+volumes:
+  mysqlData:
+    driver: local

@@ -19,13 +19,13 @@ function Index() {
           accounts. We wanted to change it up. The idea is that multiple users
           will share one account. Everything in{" "}
           <strong>Flock Connections </strong>
-          will require at least half of the group members (rounded up) to do
+          will require at least half of the flock members (rounded up) to do
           anything important. This includes making posts, adding/removing
-          members, creating chats with other groups, and much more.
+          members, creating chats with other flocks, and much more.
         </p>
         <Link
-          to="/flock"
-          className="rounded-md bg-sky-600 px-4 py-3 hover:bg-sky-700 active:bg-sky-800 font-semibold"
+          to="/home"
+          className="rounded-md bg-sky-600 px-4 py-3 font-semibold hover:bg-sky-700 active:bg-sky-800"
         >
           Flock Connections
         </Link>

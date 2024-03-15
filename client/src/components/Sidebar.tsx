@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { Home, LogOut, Menu, PersonStanding } from "lucide-react";
+import { Home, LogOut, Menu, User, Users } from "lucide-react";
 
 import { trpc } from "~/client/utils/trpc";
 
 export default function Sidebar() {
   const { data: loggedInData } = trpc.base.loggedIn.useQuery();
-  const { data: group } = trpc.user.getGroup.useQuery();
+  const { data: flock } = trpc.user.getFlock.useQuery();
 
   const [mobileLinks, setMobileLinks] = useState(false);
   const linkClass = clsx({
@@ -29,7 +29,7 @@ export default function Sidebar() {
       >
         <button
           className={clsx({
-            "lg:hidden absolute": true,
+            "absolute lg:hidden": true,
             "right-4 top-4": mobileLinks,
             "left-4 top-4": !mobileLinks,
           })}
@@ -46,20 +46,30 @@ export default function Sidebar() {
           <Link to="/" className="text-2xl font-bold hover:text-slate-400">
             Flock Connections
           </Link>
-          <span className="text-xl font-semibold text-slate-300">
+          <span className="text-lg font-semibold text-slate-300">
             {loggedInData?.username}
           </span>
           <span className="text-sm">
-            {group ? `(${group.group.name})` : "No Group"}
+            {flock ? `(${flock.flock.name})` : "No Flock"}
           </span>
         </div>
         <div className="flex w-full flex-col gap-2">
-          <Link onClick={linkOnClick} className={linkClass} to="/flock">
+          <Link onClick={linkOnClick} className={linkClass} to="/home">
             <Home />
-            <span>Flock</span>
+            <span>Home</span>
           </Link>
+          {flock && (
+            <Link
+              onClick={linkOnClick}
+              className={linkClass}
+              to={`/flock/${flock.flock.name}`}
+            >
+              <Users />
+              <span>Flock</span>
+            </Link>
+          )}
           <Link onClick={linkOnClick} className={linkClass} to="/profile">
-            <PersonStanding />
+            <User />
             <span>Profile</span>
           </Link>
           <a
@@ -74,7 +84,7 @@ export default function Sidebar() {
       </div>
       <div
         className={clsx({
-          "px-4 py-6 hidden lg:block lg:h-screen lg:w-72 lg:bg-slate-800": true,
+          "hidden px-4 py-6 lg:block lg:h-screen lg:w-72 lg:bg-slate-800": true,
           "h-screen !w-72 bg-slate-800": mobileLinks,
         })}
       ></div>
