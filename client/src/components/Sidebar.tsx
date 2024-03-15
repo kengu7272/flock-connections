@@ -46,7 +46,7 @@ export default function Sidebar() {
           <Link to="/" className="text-2xl font-bold hover:text-slate-400">
             Flock Connections
           </Link>
-          <span className="text-xl font-semibold text-slate-300">
+          <span className="text-lg font-semibold text-slate-300">
             {loggedInData?.username}
           </span>
           <span className="text-sm">

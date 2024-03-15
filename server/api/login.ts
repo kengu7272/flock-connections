@@ -98,7 +98,7 @@ hono.get("/google/callback", async (c) => {
     }
 
     const [{ insertId }] = await db.insert(Users).values({
-      username: `user ${nanoid(16)}`,
+      username: `user-${nanoid(11)}`,
       email: user.data.email,
       picture: user.data.picture,
     });

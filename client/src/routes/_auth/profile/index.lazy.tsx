@@ -18,7 +18,7 @@ export const ProfileSchema = z.object({
     .optional(),
   username: z
     .string()
-    .max(24)
+    .max(16)
     .refine((val) => !val.includes(" "))
     .optional(),
 });

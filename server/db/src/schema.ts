@@ -16,7 +16,7 @@ import { db } from "..";
 
 export const Users = mysqlTable("user", {
   id: serial("id").primaryKey(),
-  username: varchar("username", { length: 24 }).unique().notNull(),
+  username: varchar("username", { length: 16 }).unique().notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
   joined: datetime("joined", { mode: "date" })
     .notNull()
@@ -65,6 +65,7 @@ export const FlockMembers = mysqlTable("flockMember", {
 const MemberActions = ["INVITE", "KICK"] as const;
 export const FlockMemberActions = mysqlTable("flockMemberActions", {
   id: serial("id").primaryKey(),
+  publicId: varchar("publicId", { length: 16 }).unique().notNull(),
   userId: bigint("userId", { mode: "number", unsigned: true }) // who the action pertains to (ex. inviting this user)
     .notNull()
     .references(() => Users.id, { onDelete: "cascade" }),
@@ -84,8 +85,10 @@ export const FlockMemberVotes = mysqlTable(
     actionId: bigint("actionId", { mode: "number", unsigned: true })
       .notNull()
       .references(() => FlockMemberActions.id, { onDelete: "cascade" }),
-    userId: bigint("userId", { mode: "number", unsigned: true })
-      .references(() => Users.id, { onDelete: "cascade" }),
+    userId: bigint("userId", { mode: "number", unsigned: true }).references(
+      () => Users.id,
+      { onDelete: "cascade" },
+    ),
     vote: boolean("vote").notNull(),
   },
   (table) => ({ pk: primaryKey({ columns: [table.actionId, table.userId] }) }),

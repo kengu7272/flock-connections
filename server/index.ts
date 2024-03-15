@@ -6,7 +6,12 @@ import { Session, verifyRequestOrigin } from "lucia";
 import base from "./api/base";
 import { lucia } from "./auth";
 import { db } from "./db/index.ts";
-import { FlockMembers, Flocks, ProviderAccounts, Users } from "./db/src/schema.ts";
+import {
+  FlockMembers,
+  Flocks,
+  ProviderAccounts,
+  Users,
+} from "./db/src/schema.ts";
 import { Flock, User } from "./db/src/types.ts";
 import { appRouter } from "./routers/appRouter.ts";
 import { trpcServer } from "./trpc.ts";
@@ -66,7 +71,7 @@ hono.use("*", async (c, next) => {
     .where(eq(ProviderAccounts.id, user?.id ?? ""));
 
   c.set("user", dbUser?.user ?? null);
-  c.set("flock", dbUser.flock ?? null)
+  c.set("flock", dbUser.flock ?? null);
   c.set("session", session);
 
   return next();

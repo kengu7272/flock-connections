@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { inferRouterOutputs } from "@trpc/server";
 import clsx from "clsx";
 import { Menu } from "lucide-react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { z } from "zod";
 
 import User from "~/client/src/components/User";
 import { trpc } from "~/client/utils/trpc";
@@ -17,18 +20,18 @@ function Flock() {
   const { flockId } = Route.useParams();
   const { groupInfo, members } = Route.useLoaderData();
 
-  const [selected, setSelected] = useState("Members");
-
   const sections = [
     {
       name: "Members",
-      component: <Members members={members} />,
+      component: <Members name={flockId} members={members} />,
     },
     {
       name: "Voting",
       component: <Voting />,
     },
   ];
+
+  const [selected, setSelected] = useState(sections[0].name);
 
   return (
     <div className="w-full py-24">
@@ -60,12 +63,27 @@ function Flock() {
   );
 }
 
+const MemberInviteSchema = z.object({
+  username: z
+    .string()
+    .min(1)
+    .max(24)
+    .refine((val) => !val.includes(" ")),
+});
+type MemberInviteSchemaType = z.infer<typeof MemberInviteSchema>;
 const Members = ({
   members,
+  name,
 }: {
   members: inferRouterOutputs<AppRouter>["flock"]["getMembers"];
+  name: string;
 }) => {
   const [selectedUser, setSelectedUser] = useState("");
+
+  const membersList = trpc.flock.getMembers.useQuery(
+    { name },
+    { initialData: members },
+  );
 
   const createKick = trpc.flock.createKick.useMutation({
     onSuccess: () => {
@@ -73,10 +91,51 @@ const Members = ({
     },
     onError: (e) => toast.error(e.message),
   });
+
+  const createInvite = trpc.flock.createInvite.useMutation({
+    onSuccess: () => {
+      toast.success("Invite voting session successfully created");
+      membersList.refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<MemberInviteSchemaType>({
+    resolver: zodResolver(MemberInviteSchema),
+  });
+
+  const onSubmit: SubmitHandler<MemberInviteSchemaType> = (data) => {
+    createInvite.mutate({ username: data.username });
+  };
+
   return (
     <div className="mx-auto w-full space-y-2">
-      <div className="max-h-3/4 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
-        {members.map((member) => (
+      <form
+        className="flex items-center gap-2 rounded-lg bg-slate-600 p-2"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        <input
+          placeholder="Username"
+          className="flex-grow rounded-lg bg-slate-600 p-2 text-white focus:bg-slate-700 focus:outline-none"
+          {...register("username")}
+        />
+        {errors.username && (
+          <span className="text-sm text-red-500">
+            {errors.username.message}
+          </span>
+        )}
+        <input
+          type="submit"
+          value="Invite User"
+          className="ml-auto block rounded-lg bg-sky-500 px-2 py-3 hover:bg-sky-600 active:bg-sky-700"
+        />
+      </form>
+      <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
+        {membersList.data.map((member) => (
           <div key={member.user.username} className="flex items-center">
             <User
               picture={member.user.picture}
@@ -115,5 +174,67 @@ const Members = ({
 };
 
 const Voting = () => {
-  return <div></div>;
+  const votes = trpc.flock.getVotes.useQuery();
+
+  const castMemberVote = trpc.flock.memberVote.useMutation({
+    onSuccess: () => {
+      toast.success("Successfully Voted");
+      votes.refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  return (
+    <div className="mx-auto w-full space-y-2">
+      <span>Member Actions</span>
+      <div className="max-h-3/4 space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
+        {votes.data?.memberVotes.length ? (
+          votes.data.memberVotes.map((vote) => (
+            <div className="grid grid-cols-3 rounded-lg p-2 hover:bg-slate-700">
+              <div>
+                <span className="block font-semibold">Username</span>
+                <span>{vote.involving}</span>
+              </div>
+              <div className="text-center">
+                <span className="block font-semibold">Action</span>
+                <span>{vote.type}</span>
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <div className="flex flex-col items-center">
+                  <button
+                    onClick={() =>
+                      castMemberVote.mutate({
+                        vote: true,
+                        publicId: vote.publicId,
+                      })
+                    }
+                    className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                  >
+                    Yes
+                  </button>
+                  <span>({vote.yes})</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <button
+                    onClick={() =>
+                      castMemberVote.mutate({
+                        vote: false,
+                        publicId: vote.publicId,
+                      })
+                    }
+                    className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                  >
+                    No
+                  </button>
+                  <span>({vote.no})</span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <span>No active votes regarding members</span>
+        )}
+      </div>
+    </div>
+  );
 };
