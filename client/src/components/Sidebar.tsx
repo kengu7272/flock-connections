@@ -49,8 +49,8 @@ export default function Sidebar() {
           <span className="text-lg font-semibold text-slate-300">
             {loggedInData?.username}
           </span>
-          <span className="text-sm">
-            {flock ? `(${flock.flock.name})` : "No Flock"}
+          <span className="text-sm text-slate-300">
+            {flock ? `${flock.flock.name}` : "No Flock"}
           </span>
         </div>
         <div className="flex w-full flex-col gap-2">

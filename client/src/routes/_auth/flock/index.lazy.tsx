@@ -2,21 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { z } from "zod";
 
 import { trpc } from "~/client/utils/trpc";
+import { FlockSchema, FlockSchemaType } from "~/server/validation";
 
 export const Route = createLazyFileRoute("/_auth/flock/")({
   component: Flock,
 });
 
-export const FlockSchema = z
-  .object({
-    name: z.string().min(1).max(24).refine((val) => !val.includes(' '), { message: "Name cannot contain spaces"}),
-    description: z.string().min(1).max(500).refine((val) => !!val.trim(), { message: "Must contain content" }),
-  })
-  .required();
-type FlockSchemaType = z.infer<typeof FlockSchema>;
 function Flock() {
   const navigate = useNavigate();
 

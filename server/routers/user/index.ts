@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 
-import { ProfileSchema } from "~/client/src/routes/_auth/profile/index.lazy";
+import { ProfileSchema } from "~/server/validation"; 
 import { FlockMembers, Flocks, Users } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 

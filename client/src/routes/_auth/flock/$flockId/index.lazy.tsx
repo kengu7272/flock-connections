@@ -6,11 +6,11 @@ import clsx from "clsx";
 import { Menu } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { z } from "zod";
 
 import User from "~/client/src/components/User";
 import { trpc } from "~/client/utils/trpc";
 import { AppRouter } from "~/server/routers/appRouter";
+import { MemberInviteSchema, MemberInviteSchemaType } from "~/server/validation";
 
 export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
   component: Flock,
@@ -63,16 +63,6 @@ function Flock() {
   );
 }
 
-const MemberInviteSchema = z.object({
-  username: z
-    .string()
-    .min(1)
-    .max(24)
-    .refine((val) => !val.includes(" "), {
-      message: "Usernames don't include spaces",
-    }),
-});
-type MemberInviteSchemaType = z.infer<typeof MemberInviteSchema>;
 const Members = ({
   members,
   name,
@@ -123,6 +113,7 @@ const Members = ({
         <div className="w-full flex flex-col">
           <input
             placeholder="Username"
+            autoComplete="off"
             className="flex-grow rounded-lg bg-slate-600 p-2 text-white focus:bg-slate-700 focus:outline-none"
             {...register("username")}
           />
