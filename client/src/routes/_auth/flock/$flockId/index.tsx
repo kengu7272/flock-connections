@@ -11,7 +11,8 @@ export const Route = createFileRoute("/_auth/flock/$flockId/")({
   loader: async ({ params: { flockId } }) => {
     const members = await client.flock.getMembers.query({ name: flockId });
     const groupInfo = await client.flock.getInfo.query({ name: flockId });
+    const user = await client.user.userInfo.query();
 
-    return { members, groupInfo };
+    return { members, groupInfo, user };
   },
 });
