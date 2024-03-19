@@ -108,6 +108,7 @@ function Profile() {
               <span className="text-sm text-red-500">{errors.bio.message}</span>
             )}
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
                 removeBio.mutate();
