@@ -62,7 +62,7 @@ export default function Sidebar() {
             <Link
               onClick={linkOnClick}
               className={linkClass}
-              to={`/flock/${flock.flock.name}`}
+              to={"/flock/" + flock.flock.name}
             >
               <Users />
               <span>Flock</span>
