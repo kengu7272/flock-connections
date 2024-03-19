@@ -77,6 +77,7 @@ export const FlockMemberActions = mysqlTable("flockMemberActions", {
     .references(() => Users.id, { onDelete: "cascade" }),
   type: mysqlEnum("type", MemberActions).notNull(),
   active: boolean("status").notNull().default(true),
+  accepted: boolean("accepted").notNull().default(false),
 });
 
 export const FlockMemberVotes = mysqlTable(
