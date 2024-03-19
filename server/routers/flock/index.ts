@@ -3,7 +3,6 @@ import { and, count, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
-import { FlockSchema } from "~/client/src/routes/_auth/flock/index.lazy";
 import {
   FlockMemberActions,
   FlockMembers,
@@ -12,6 +11,7 @@ import {
   Users,
 } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
+import { FlockSchema, MemberInviteSchema } from "~/server/validation";
 
 export const flockRouter = router({
   create: protectedProcedure
@@ -134,7 +134,7 @@ export const flockRouter = router({
     return { memberVotes };
   }),
   createInvite: protectedProcedure
-    .input(z.object({ username: z.string() }))
+    .input(MemberInviteSchema)
     .mutation(async ({ ctx, input }) => {
       if (!ctx.flock)
         throw new TRPCError({

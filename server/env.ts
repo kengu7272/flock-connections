@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { TypeOf, z } from "zod";
 
 import "dotenv/config";

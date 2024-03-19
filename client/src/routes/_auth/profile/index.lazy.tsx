@@ -2,27 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { z } from "zod";
 
 import { trpc } from "~/client/utils/trpc";
+import { ProfileSchema, ProfileSchemaType } from "~/server/validation";
 
 export const Route = createLazyFileRoute("/_auth/profile/")({
   component: Profile,
 });
-
-export const ProfileSchema = z.object({
-  bio: z
-    .string()
-    .max(255)
-    .refine((val) => !val.length || !!val.trim(), { message: "Empty Content" })
-    .optional(),
-  username: z
-    .string()
-    .max(16)
-    .refine((val) => !val.includes(" "), { message: "Spaces aren't allowed" })
-    .optional(),
-});
-type ProfileSchemaType = z.infer<typeof ProfileSchema>;
 
 function Profile() {
   const userInfo = trpc.user.userInfo.useQuery();
