@@ -109,7 +109,7 @@ const Members = ({
   };
 
   return (
-    <div className="mx-auto w-full space-y-2">
+    <div onClick={() => setSelectedUser("")} className="mx-auto w-full space-y-2">
       <form
         className="flex items-center gap-2 rounded-lg bg-slate-600 p-2"
         onSubmit={handleSubmit(onSubmit)}

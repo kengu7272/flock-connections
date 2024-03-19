@@ -1,7 +1,13 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { z } from "zod";
 
-import { FlockMembers, Flocks, Users } from "~/server/db/src/schema";
+import {
+  FlockMemberActions,
+  FlockMembers,
+  Flocks,
+  Users,
+} from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 import { ProfileSchema } from "~/server/validation";
 
@@ -43,6 +49,83 @@ export const userRouter = router({
 
     return flock ?? null;
   }),
+  getOutstandingInvites: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db
+      .select({ name: Flocks.name })
+      .from(FlockMemberActions)
+      .innerJoin(Flocks, eq(Flocks.id, FlockMemberActions.flockId))
+      .where(
+        and(
+          eq(FlockMemberActions.accepted, true),
+          eq(FlockMemberActions.type, "INVITE"),
+          eq(FlockMemberActions.outstanding, true),
+          eq(FlockMemberActions.userId, ctx.user.id),
+        ),
+      );
+  }),
+  acceptInvite: protectedProcedure
+    .input(z.object({ name: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [flock] = await ctx.db
+        .select({ id: Flocks.id, actionId: FlockMemberActions.id })
+        .from(FlockMemberActions)
+        .innerJoin(Flocks, eq(Flocks.id, FlockMemberActions.flockId))
+        .where(
+          and(
+            eq(FlockMemberActions.accepted, true),
+            eq(FlockMemberActions.type, "INVITE"),
+            eq(FlockMemberActions.outstanding, true),
+            eq(FlockMemberActions.userId, ctx.user.id),
+            eq(Flocks.name, input.name),
+          ),
+        );
+
+      if (!flock)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No invite found",
+        });
+
+      // delete user from member lists to avoid having to check to update
+      await ctx.db
+        .delete(FlockMembers)
+        .where(eq(FlockMembers.userId, ctx.user.id));
+      await ctx.db
+        .insert(FlockMembers)
+        .values({ flockId: flock.id, userId: ctx.user.id });
+      await ctx.db
+        .update(FlockMemberActions)
+        .set({ outstanding: false, decision: true })
+        .where(eq(FlockMemberActions.id, flock.actionId));
+    }),
+  declineInvite: protectedProcedure
+    .input(z.object({ name: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [flock] = await ctx.db
+        .select({ id: Flocks.id, actionId: FlockMemberActions.id })
+        .from(FlockMemberActions)
+        .innerJoin(Flocks, eq(Flocks.id, FlockMemberActions.flockId))
+        .where(
+          and(
+            eq(FlockMemberActions.accepted, true),
+            eq(FlockMemberActions.type, "INVITE"),
+            eq(FlockMemberActions.outstanding, true),
+            eq(FlockMemberActions.userId, ctx.user.id),
+            eq(Flocks.name, input.name),
+          ),
+        );
+
+      if (!flock)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No invite found",
+        });
+
+      await ctx.db
+        .update(FlockMemberActions)
+        .set({ outstanding: false })
+        .where(eq(FlockMemberActions.id, flock.actionId));
+    }),
   clearBio: protectedProcedure.mutation(async ({ ctx }) => {
     await ctx.db
       .update(Users)
