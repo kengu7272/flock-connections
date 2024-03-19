@@ -78,12 +78,6 @@ export const flockRouter = router({
   getInfo: protectedProcedure
     .input(z.object({ name: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (!ctx.flock)
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You're not in a Flock",
-        });
-
       const [info] = await ctx.db
         .select({
           name: Flocks.name,
@@ -124,7 +118,7 @@ export const flockRouter = router({
       .innerJoin(Users, eq(Users.id, FlockMemberActions.userId))
       .where(
         and(
-          eq(FlockMemberActions.active, true),
+          eq(FlockMemberActions.open, true),
           eq(FlockMemberActions.flockId, ctx.flock.id),
         ),
       )
@@ -187,7 +181,7 @@ export const flockRouter = router({
           and(
             eq(FlockMemberActions.flockId, ctx.flock.id),
             eq(Users.id, user.id),
-            eq(FlockMemberActions.active, true),
+            eq(FlockMemberActions.open, true),
             eq(FlockMemberActions.type, "INVITE"),
           ),
         );
@@ -258,7 +252,7 @@ export const flockRouter = router({
           and(
             eq(FlockMemberActions.flockId, ctx.flock.id),
             eq(Users.id, user.id),
-            eq(FlockMemberActions.active, true),
+            eq(FlockMemberActions.open, true),
             eq(FlockMemberActions.type, "KICK"),
           ),
         );
@@ -301,7 +295,7 @@ export const flockRouter = router({
         .where(
           and(
             eq(FlockMemberActions.publicId, input.publicId),
-            eq(FlockMemberActions.active, true),
+            eq(FlockMemberActions.open, true),
             eq(FlockMemberActions.flockId, ctx.flock.id),
           ),
         );
@@ -349,13 +343,16 @@ export const flockRouter = router({
         });
 
       // check if majority
-      const [{ votes: yes }, { votes: no }] = await ctx.db
+      const [yesVotes, noVotes] = await ctx.db
         .select({ votes: count(FlockMemberVotes.userId) })
         .from(FlockMemberVotes)
         .where(and(eq(FlockMemberVotes.actionId, action.id)))
         .groupBy(FlockMemberVotes.vote)
         .orderBy(FlockMemberVotes.vote);
       const majority = Math.floor(members.count / 2) + 1;
+
+      const yes = yesVotes ? yesVotes.votes : 0;
+      const no = noVotes ? noVotes.votes : 0;
 
       // if majority voted or group size is small enough
       if (
@@ -365,18 +362,23 @@ export const flockRouter = router({
       ) {
         await ctx.db
           .update(FlockMemberActions)
-          .set({ accepted: true })
+          .set({ open: false })
           .where(eq(FlockMemberActions.id, action.id));
 
         // if vote is a no nothing happens
         if (no >= majority || (no === members.count && members.count === 2)) {
           await ctx.db
             .update(FlockMemberActions)
-            .set({ active: false })
+            .set({ outstanding: false })
             .where(eq(FlockMemberActions.id, action.id));
 
           return;
         }
+
+        await ctx.db
+          .update(FlockMemberActions)
+          .set({ accepted: true })
+          .where(eq(FlockMemberActions.id, action.id));
 
         // if a vote is a kick active = false, otherwise outstanding invite
         if (action.type === "KICK") {
@@ -386,7 +388,7 @@ export const flockRouter = router({
 
           await ctx.db
             .update(FlockMemberActions)
-            .set({ active: false })
+            .set({ outstanding: false })
             .where(eq(FlockMemberActions.id, action.id));
         }
       }
