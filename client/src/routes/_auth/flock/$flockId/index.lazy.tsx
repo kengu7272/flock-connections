@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createLazyFileRoute } from "@tanstack/react-router";
-import { inferRouterOutputs } from "@trpc/server";
+import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import clsx from "clsx";
-import { Menu } from "lucide-react";
+import { Check, Menu, X } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import User from "~/client/src/components/User";
 import { trpc } from "~/client/utils/trpc";
-import { AppRouter } from "~/server/routers/appRouter";
 import {
   MemberInviteSchema,
   MemberInviteSchemaType,
@@ -21,12 +19,12 @@ export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
 
 function Flock() {
   const { flockId } = Route.useParams();
-  const { groupInfo, members } = Route.useLoaderData();
+  const { groupInfo } = Route.useLoaderData();
 
   const sections = [
     {
       name: "Members",
-      component: <Members name={flockId} members={members} />,
+      component: <Members name={flockId} />,
     },
     {
       name: "Voting",
@@ -67,14 +65,9 @@ function Flock() {
   );
 }
 
-const Members = ({
-  members,
-  name,
-}: {
-  members: inferRouterOutputs<AppRouter>["flock"]["getMembers"];
-  name: string;
-}) => {
+const Members = ({ name }: { name: string }) => {
   const [selectedUser, setSelectedUser] = useState("");
+  const { members, user } = Route.useLoaderData();
 
   const membersList = trpc.flock.getMembers.useQuery(
     { name },
@@ -87,7 +80,6 @@ const Members = ({
     },
     onError: (e) => toast.error(e.message),
   });
-
   const createInvite = trpc.flock.createInvite.useMutation({
     onSuccess: () => {
       toast.success("Invite voting session successfully created");
@@ -108,8 +100,17 @@ const Members = ({
     createInvite.mutate({ username: data.username });
   };
 
+  const navigate = useNavigate();
+  const [leaveConfirm, setLeaveConfirm] = useState(false);
+  const leaveFlock = trpc.user.leaveFlock.useMutation({
+    onSuccess: () => {
+      toast.success("Successfully left flock");
+      navigate({ to: "/home" });
+    },
+  });
+
   return (
-    <div onClick={() => setSelectedUser("")} className="mx-auto w-full space-y-2">
+    <div className="mx-auto w-full space-y-2">
       <form
         className="flex items-center gap-2 rounded-lg bg-slate-600 p-2"
         onSubmit={handleSubmit(onSubmit)}
@@ -154,14 +155,43 @@ const Members = ({
               </button>
               {selectedUser === member.user.username && (
                 <div className="absolute right-0 top-full z-50 min-w-24 whitespace-nowrap rounded-lg bg-slate-700 py-1">
-                  <button
-                    onClick={() =>
-                      createKick.mutate({ username: member.user.username })
-                    }
-                    className="w-full rounded-lg px-2 py-3 hover:bg-slate-800 active:bg-slate-900"
-                  >
-                    Vote to Kick
-                  </button>
+                  {selectedUser !== user.username ? (
+                    <button
+                      onClick={() =>
+                        createKick.mutate({ username: member.user.username })
+                      }
+                      className="w-full rounded-lg px-2 py-3 hover:bg-slate-800 active:bg-slate-900"
+                    >
+                      Vote to Kick
+                    </button>
+                  ) : (
+                    <div className="relative">
+                      <button
+                        onClick={() => setLeaveConfirm((prev) => !prev)}
+                        className="w-full rounded-lg px-2 py-3 hover:bg-red-700 active:bg-red-800"
+                      >
+                        Leave Flock
+                      </button>
+                      {leaveConfirm && (
+                        <div className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-lg bg-slate-800 p-2">
+                          <span>Are you sure?</span>
+                          <div className="flex items-center justify-center gap-2">
+                            <button onClick={() => leaveFlock.mutate()}>
+                              <Check className="h-7 w-7 text-green-600 hover:text-green-700 active:text-green-800" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setLeaveConfirm(false);
+                                setSelectedUser("");
+                              }}
+                            >
+                              <X className="h-7 w-7 text-red-600 hover:text-red-700 active:text-red-800" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

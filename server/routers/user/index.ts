@@ -132,4 +132,9 @@ export const userRouter = router({
       .set({ bio: "" })
       .where(eq(Users.id, ctx.user.id));
   }),
+  leaveFlock: protectedProcedure.mutation(async ({ ctx }) => {
+    await ctx.db
+      .delete(FlockMembers)
+      .where(eq(FlockMembers.userId, ctx.user.id));
+  }),
 });
