@@ -1,8 +1,14 @@
+import { useCallback, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute } from "@tanstack/react-router";
+import { useDropzone } from "@uploadthing/react";
+import clsx from "clsx";
+import { FolderUp, Loader2, XCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { generateClientDropzoneAccept } from "uploadthing/client";
 
+import { useUploadThing } from "~/client/src/utils/uploadthing";
 import { trpc } from "~/client/utils/trpc";
 import { ProfileSchema, ProfileSchemaType } from "~/server/validation";
 
@@ -54,6 +60,8 @@ function Profile() {
     onError: (e) => toast.error(e.message),
   });
 
+  const [selectPicture, setSelectPicture] = useState(true);
+
   return (
     <div className="w-full py-24">
       <main className="items-center-center mx-auto flex w-[95%] flex-col space-y-4 rounded-lg bg-slate-700 py-6 lg:w-3/5 xl:w-2/5">
@@ -61,11 +69,22 @@ function Profile() {
           Edit Profile
         </span>
         <div className="flex flex-col items-center gap-2">
-          <img
-            src={userInfo.data?.picture ?? ""}
-            className="h-16 w-16 rounded-full"
-            alt="Profile Picture"
-          />
+          <div className="flex flex-col w-full items-center gap-4 px-2 lg:px-20">
+            <img
+              onClick={() => setSelectPicture((prev) => !prev)}
+              src={userInfo.data?.picture ?? ""}
+              className="h-16 w-16 rounded-full duration-200 hover:scale-110"
+              alt="Profile Picture"
+            />
+            {selectPicture && (
+              <div className="w-full flex flex-col items-center gap-y-2">
+                <span className="font-semibold">
+                  Upload a new Profile Picture
+                </span>
+                <Uploader />
+              </div>
+            )}
+          </div>
           <span className="text-lg font-semibold">
             {userInfo.data?.username}
           </span>
@@ -124,7 +143,104 @@ function Profile() {
             className="ml-auto block h-12 rounded-lg bg-sky-600 px-3 py-2 text-white hover:bg-sky-700 active:bg-sky-800 disabled:opacity-75"
           />
         </form>
+        <div />
       </main>
+    </div>
+  );
+}
+
+function Uploader() {
+  const [files, setFiles] = useState<File[]>([]);
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setFiles(acceptedFiles);
+  }, []);
+
+  const [progress, setProgress] = useState(0);
+  const { startUpload, permittedFileInfo, isUploading } = useUploadThing(
+    "flockImage",
+    {
+      onClientUploadComplete: () => {
+        alert("uploaded successfully!");
+      },
+      onUploadError: () => {
+        alert("error occurred while uploading");
+      },
+      onUploadProgress: (p) => {
+        setProgress(p);
+      },
+      onUploadBegin: () => {
+        alert("upload has begun");
+      },
+    },
+  );
+
+  const fileTypes = permittedFileInfo?.config
+    ? Object.keys(permittedFileInfo?.config)
+    : [];
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: fileTypes ? generateClientDropzoneAccept(fileTypes) : undefined,
+  });
+
+  return (
+    <div className="flex w-full flex-col items-center justify-center gap-2 text-slate-50">
+      <div
+        className="relative flex h-32 w-full cursor-pointer items-center justify-center rounded-lg bg-slate-800"
+        {...getRootProps()}
+      >
+        <div
+          style={{ width: `${progress}%` }}
+          className="absolute bottom-0 left-0 top-0 z-0 h-full bg-slate-600/90 transition-[width]"
+        />
+        <input {...getInputProps()} />
+        {isUploading ? (
+          <div className="z-10 flex items-center justify-center gap-4 text-sm">
+            <Loader2 strokeWidth={1.25} className="h-9 w-9 animate-spin" />
+            <div className="flex flex-col items-center justify-center">
+              <span>
+                Uploading {files.length} File{files.length > 1 && "s"}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="z-10 flex items-center justify-center gap-4 text-sm">
+            <FolderUp strokeWidth={1.25} className="h-9 w-9" />
+            <div className="flex flex-col items-center justify-center">
+              <span>
+                {files.length
+                  ? `${files.length} File${files.length > 1 ? "s" : ""}`
+                  : "Upload your file"}
+              </span>
+              {!files.length && <span>(4 MB)</span>}
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="flex w-fit flex-col justify-end gap-2">
+        {!!files.length && !isUploading && (
+          <button
+            className="flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium"
+            disabled={files.length === 0 || isUploading}
+            onClick={() => setFiles([])}
+          >
+            <XCircle className="h-4 w-4" />
+            Clear Files
+          </button>
+        )}
+        <button
+          onClick={() => startUpload(files)}
+          className={clsx({
+            "inline-flex items-center gap-2 rounded-md bg-sky-500 px-5 py-2 transition-colors":
+              true,
+            "opacity-50": files.length === 0,
+            "active:bg-slate-700 enabled:hover:bg-sky-600": files.length > 0,
+          })}
+          disabled={files.length === 0 || isUploading}
+        >
+          {isUploading ? "Uploading" : "Upload Image"}
+        </button>
+      </div>
     </div>
   );
 }
