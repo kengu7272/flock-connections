@@ -10,7 +10,6 @@ export const Route = createLazyFileRoute("/_auth/profile/")({
   component: Profile,
 });
 
-
 function Profile() {
   const userInfo = trpc.user.userInfo.useQuery();
   const flock = trpc.user.getFlock.useQuery();

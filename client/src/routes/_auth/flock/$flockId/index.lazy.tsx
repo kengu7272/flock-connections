@@ -10,7 +10,10 @@ import { toast } from "react-toastify";
 import User from "~/client/src/components/User";
 import { trpc } from "~/client/utils/trpc";
 import { AppRouter } from "~/server/routers/appRouter";
-import { MemberInviteSchema, MemberInviteSchemaType } from "~/server/validation";
+import {
+  MemberInviteSchema,
+  MemberInviteSchemaType,
+} from "~/server/validation";
 
 export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
   component: Flock,
@@ -44,6 +47,7 @@ function Flock() {
         <div>
           {sections.map((section) => (
             <button
+              key={section.name}
               onClick={() => setSelected(section.name)}
               className={clsx({
                 "px-2 text-lg hover:text-slate-100 active:text-slate-200": true,
@@ -110,7 +114,7 @@ const Members = ({
         className="flex items-center gap-2 rounded-lg bg-slate-600 p-2"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className="w-full flex flex-col">
+        <div className="flex w-full flex-col">
           <input
             placeholder="Username"
             autoComplete="off"
@@ -118,7 +122,7 @@ const Members = ({
             {...register("username")}
           />
           {errors.username && (
-            <span className="text-sm text-red-500 block">
+            <span className="block text-sm text-red-500">
               {errors.username.message}
             </span>
           )}
@@ -185,7 +189,10 @@ const Voting = () => {
       <div className="max-h-3/4 space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
         {votes.data?.memberVotes.length ? (
           votes.data.memberVotes.map((vote) => (
-            <div className="grid grid-cols-3 rounded-lg p-2 hover:bg-slate-700">
+            <div
+              key={vote.publicId}
+              className="grid grid-cols-3 rounded-lg p-2 hover:bg-slate-700"
+            >
               <div>
                 <span className="block font-semibold">Username</span>
                 <span>{vote.involving}</span>

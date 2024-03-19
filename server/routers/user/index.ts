@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 
-import { ProfileSchema } from "~/server/validation"; 
 import { FlockMembers, Flocks, Users } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
+import { ProfileSchema } from "~/server/validation";
 
 export const userRouter = router({
   userInfo: protectedProcedure.query(({ ctx }) => {

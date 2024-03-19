@@ -3,7 +3,6 @@ import { and, count, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
-import { FlockSchema, MemberInviteSchema } from "~/server/validation"; 
 import {
   FlockMemberActions,
   FlockMembers,
@@ -12,6 +11,7 @@ import {
   Users,
 } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
+import { FlockSchema, MemberInviteSchema } from "~/server/validation";
 
 export const flockRouter = router({
   create: protectedProcedure

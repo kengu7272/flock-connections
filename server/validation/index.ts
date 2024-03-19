@@ -16,8 +16,18 @@ export type ProfileSchemaType = z.infer<typeof ProfileSchema>;
 
 export const FlockSchema = z
   .object({
-    name: z.string().min(1).max(24).refine((val) => !val.includes(' '), { message: "Name cannot contain spaces"}),
-    description: z.string().min(1).max(500).refine((val) => !!val.trim(), { message: "Must contain content" }),
+    name: z
+      .string()
+      .min(1)
+      .max(24)
+      .refine((val) => !val.includes(" "), {
+        message: "Name cannot contain spaces",
+      }),
+    description: z
+      .string()
+      .min(1)
+      .max(500)
+      .refine((val) => !!val.trim(), { message: "Must contain content" }),
   })
   .required();
 export type FlockSchemaType = z.infer<typeof FlockSchema>;
