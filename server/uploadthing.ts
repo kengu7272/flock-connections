@@ -1,4 +1,5 @@
 import { createUploadthing, type FileRouter } from "uploadthing/server";
+import { getServerSession } from "./auth";
 
 const f = createUploadthing();
 
@@ -9,7 +10,9 @@ export const uploadRouter = {
       maxFileCount: 1,
     },
   })
-    .middleware(({ req }) => {
+    .middleware(async ({ req }) => {
+    const user = await getServerSession(req);
+    console.log(user)
       return { yes: true };
     })
     .onUploadComplete((data) => {}),

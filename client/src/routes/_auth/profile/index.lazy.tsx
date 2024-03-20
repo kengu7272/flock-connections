@@ -160,16 +160,13 @@ function Uploader() {
     "flockImage",
     {
       onClientUploadComplete: () => {
-        alert("uploaded successfully!");
+        toast.success("Profile Picture Updated")
       },
-      onUploadError: () => {
-        alert("error occurred while uploading");
+      onUploadError: (e) => {
+        toast.error(e.message);
       },
       onUploadProgress: (p) => {
         setProgress(p);
-      },
-      onUploadBegin: () => {
-        alert("upload has begun");
       },
     },
   );
