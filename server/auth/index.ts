@@ -36,7 +36,9 @@ export const google = new Google(
   "http://localhost:3000/api/login/google/callback",
 );
 
-// server session
+// server session 
+// don't need to set cookies, middleware before every route
+// already handles that, this is mainly for uploadthing routes currently
 export const getServerSession = async (request: Request) => {
   const cookieHeader = request.headers.get("Cookie");
   const sessionId = lucia.readSessionCookie(cookieHeader ?? "");
