@@ -1,5 +1,13 @@
-import { createUploadthing, type FileRouter } from "uploadthing/server";
+import { eq } from "drizzle-orm";
+import {
+  createUploadthing,
+  UploadThingError,
+  type FileRouter,
+} from "uploadthing/server";
+
 import { getServerSession } from "./auth";
+import { db } from "./db";
+import { Users } from "./db/src/schema";
 
 const f = createUploadthing();
 
@@ -11,11 +19,19 @@ export const uploadRouter = {
     },
   })
     .middleware(async ({ req }) => {
-    const user = await getServerSession(req);
-    console.log(user)
-      return { yes: true };
+      const user = await getServerSession(req);
+      if (!user?.userInfo) throw new UploadThingError("No user found");
+
+      return { userId: user?.userInfo.user.id };
     })
-    .onUploadComplete((data) => {}),
+    .onUploadComplete(async ({ file, metadata }) => {
+      await db
+        .update(Users)
+        .set({ picture: file.url })
+        .where(eq(Users.id, metadata.userId));
+    //@TODO 
+    //Delete file (if exists) on uploadthing
+    }),
 } satisfies FileRouter;
 
 export type UploadRouter = typeof uploadRouter;
