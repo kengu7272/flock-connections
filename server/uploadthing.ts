@@ -2,8 +2,8 @@ import { eq } from "drizzle-orm";
 import {
   createUploadthing,
   UploadThingError,
-  type FileRouter,
   UTApi,
+  type FileRouter,
 } from "uploadthing/server";
 
 import { getServerSession } from "./auth";
@@ -28,7 +28,10 @@ export const uploadRouter = {
       return { userId: user?.userInfo.user.id };
     })
     .onUploadComplete(async ({ file, metadata }) => {
-      const [pictureUrl] = await db.select({ url: Users.picture }).from(Users).where(eq(Users.id, metadata.userId));
+      const [pictureUrl] = await db
+        .select({ url: Users.picture })
+        .from(Users)
+        .where(eq(Users.id, metadata.userId));
       await db
         .update(Users)
         .set({ picture: file.url })

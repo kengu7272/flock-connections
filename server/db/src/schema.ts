@@ -63,31 +63,42 @@ export const FlockMembers = mysqlTable("flockMember", {
 });
 
 const MemberActions = ["INVITE", "KICK"] as const;
-export const FlockMemberActions = mysqlTable("flockMemberActions", {
+const Actions = [
+  "UPDATE PICTURE",
+  "UPDATE DESCRIPTION",
+  ...MemberActions,
+] as const;
+export const FlockActions = mysqlTable("flockAction", {
   id: serial("id").primaryKey(),
   publicId: varchar("publicId", { length: 16 }).unique().notNull(),
-  userId: bigint("userId", { mode: "number", unsigned: true }) // who the action pertains to (ex. inviting this user)
-    .notNull()
-    .references(() => Users.id, { onDelete: "cascade" }),
   flockId: bigint("flockId", { mode: "number", unsigned: true })
     .notNull()
     .references(() => Flocks.id, { onDelete: "cascade" }),
   creator: bigint("creator", { mode: "number", unsigned: true })
     .notNull()
     .references(() => Users.id, { onDelete: "cascade" }),
-  type: mysqlEnum("type", MemberActions).notNull(),
+  type: mysqlEnum("type", Actions).notNull(),
   open: boolean("open").notNull().default(true),
   accepted: boolean("accepted").notNull().default(false),
+});
+
+export const FlockMemberActions = mysqlTable("flockMemberAction", {
+  actionId: bigint("actionId", { mode: "number", unsigned: true })
+    .references(() => FlockActions.id, { onDelete: "cascade" })
+    .primaryKey(),
+  userId: bigint("userId", { mode: "number", unsigned: true }) // who the action pertains to (ex. inviting this user)
+    .notNull()
+    .references(() => Users.id, { onDelete: "cascade" }),
+  accepted: boolean("accepted").notNull().default(false),
   outstanding: boolean("outstanding").notNull().default(true),
-  decision: boolean("decision").notNull().default(false),
 });
 
 export const FlockMemberVotes = mysqlTable(
-  "flockMemberVotes",
+  "flockMemberVote",
   {
     actionId: bigint("actionId", { mode: "number", unsigned: true })
       .notNull()
-      .references(() => FlockMemberActions.id, { onDelete: "cascade" }),
+      .references(() => FlockActions.id, { onDelete: "cascade" }),
     userId: bigint("userId", { mode: "number", unsigned: true }).references(
       () => Users.id,
       { onDelete: "cascade" },

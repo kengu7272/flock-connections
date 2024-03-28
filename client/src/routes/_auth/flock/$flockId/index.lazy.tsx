@@ -205,7 +205,7 @@ const Members = ({ name }: { name: string }) => {
 const Voting = () => {
   const votes = trpc.flock.getVotes.useQuery();
 
-  const castMemberVote = trpc.flock.memberVote.useMutation({
+  const castMemberVote = trpc.flock.vote.useMutation({
     onSuccess: () => {
       toast.success("Successfully Voted");
       votes.refetch();

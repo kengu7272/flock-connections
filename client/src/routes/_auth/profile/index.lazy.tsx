@@ -17,13 +17,20 @@ export const Route = createLazyFileRoute("/_auth/profile/")({
 });
 
 function Profile() {
-  const { userInfo: initialUserInfo, flock: initialFlock } = Route.useLoaderData();
+  const { userInfo: initialUserInfo, flock: initialFlock } =
+    Route.useLoaderData();
 
-  const userInfo = trpc.user.userInfo.useQuery(undefined, { initialData: initialUserInfo });
-  const flock = trpc.user.getFlock.useQuery(undefined, { initialData: initialFlock });
+  const userInfo = trpc.user.userInfo.useQuery(undefined, {
+    initialData: initialUserInfo,
+  });
+  const flock = trpc.user.getFlock.useQuery(undefined, {
+    initialData: initialFlock,
+  });
   const utils = trpc.useContext();
 
-  const [profilePicture, setProfilePicture] = useState(userInfo.data?.picture ?? "");
+  const [profilePicture, setProfilePicture] = useState(
+    userInfo.data?.picture ?? "",
+  );
 
   const updateProfile = trpc.user.updateProfile.useMutation({
     onSuccess: () => {
@@ -153,7 +160,11 @@ function Profile() {
   );
 }
 
-function Uploader({ setProfilePicture }: { setProfilePicture: React.Dispatch<React.SetStateAction<string>>} ) {
+function Uploader({
+  setProfilePicture,
+}: {
+  setProfilePicture: React.Dispatch<React.SetStateAction<string>>;
+}) {
   const [files, setFiles] = useState<File[]>([]);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
