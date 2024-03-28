@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import {
+  FlockActions,
   FlockMemberActions,
   FlockMembers,
   Flocks,
@@ -52,12 +53,16 @@ export const userRouter = router({
   getOutstandingInvites: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db
       .select({ name: Flocks.name })
-      .from(FlockMemberActions)
-      .innerJoin(Flocks, eq(Flocks.id, FlockMemberActions.flockId))
+      .from(FlockActions)
+      .innerJoin(
+        FlockMemberActions,
+        eq(FlockMemberActions.actionId, FlockActions.id),
+      )
+      .innerJoin(Flocks, eq(Flocks.id, FlockActions.flockId))
       .where(
         and(
-          eq(FlockMemberActions.accepted, true),
-          eq(FlockMemberActions.type, "INVITE"),
+          eq(FlockActions.accepted, true),
+          eq(FlockActions.type, "INVITE"),
           eq(FlockMemberActions.outstanding, true),
           eq(FlockMemberActions.userId, ctx.user.id),
         ),
@@ -67,13 +72,17 @@ export const userRouter = router({
     .input(z.object({ name: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const [flock] = await ctx.db
-        .select({ id: Flocks.id, actionId: FlockMemberActions.id })
-        .from(FlockMemberActions)
-        .innerJoin(Flocks, eq(Flocks.id, FlockMemberActions.flockId))
+        .select({ id: Flocks.id, actionId: FlockActions.id })
+        .from(FlockActions)
+        .innerJoin(
+          FlockMemberActions,
+          eq(FlockMemberActions.actionId, FlockActions.id),
+        )
+        .innerJoin(Flocks, eq(Flocks.id, FlockActions.flockId))
         .where(
           and(
-            eq(FlockMemberActions.accepted, true),
-            eq(FlockMemberActions.type, "INVITE"),
+            eq(FlockActions.accepted, true),
+            eq(FlockActions.type, "INVITE"),
             eq(FlockMemberActions.outstanding, true),
             eq(FlockMemberActions.userId, ctx.user.id),
             eq(Flocks.name, input.name),
@@ -95,20 +104,24 @@ export const userRouter = router({
         .values({ flockId: flock.id, userId: ctx.user.id });
       await ctx.db
         .update(FlockMemberActions)
-        .set({ outstanding: false, decision: true })
-        .where(eq(FlockMemberActions.id, flock.actionId));
+        .set({ outstanding: false, accepted: true })
+        .where(eq(FlockMemberActions.actionId, flock.actionId));
     }),
   declineInvite: protectedProcedure
     .input(z.object({ name: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const [flock] = await ctx.db
-        .select({ id: Flocks.id, actionId: FlockMemberActions.id })
-        .from(FlockMemberActions)
-        .innerJoin(Flocks, eq(Flocks.id, FlockMemberActions.flockId))
+        .select({ id: Flocks.id, actionId: FlockActions.id })
+        .from(FlockActions)
+        .innerJoin(
+          FlockMemberActions,
+          eq(FlockMemberActions.actionId, FlockActions.id),
+        )
+        .innerJoin(Flocks, eq(Flocks.id, FlockActions.flockId))
         .where(
           and(
-            eq(FlockMemberActions.accepted, true),
-            eq(FlockMemberActions.type, "INVITE"),
+            eq(FlockActions.accepted, true),
+            eq(FlockActions.type, "INVITE"),
             eq(FlockMemberActions.outstanding, true),
             eq(FlockMemberActions.userId, ctx.user.id),
             eq(Flocks.name, input.name),
@@ -124,7 +137,7 @@ export const userRouter = router({
       await ctx.db
         .update(FlockMemberActions)
         .set({ outstanding: false })
-        .where(eq(FlockMemberActions.id, flock.actionId));
+        .where(eq(FlockMemberActions.actionId, flock.actionId));
     }),
   clearBio: protectedProcedure.mutation(async ({ ctx }) => {
     await ctx.db

@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 
 import {
+  FlockActions,
   FlockMemberActions,
   FlockMembers,
   FlockMemberVotes,
@@ -100,29 +101,33 @@ export const flockRouter = router({
 
     const memberVotes = await ctx.db
       .select({
-        type: FlockMemberActions.type,
+        type: FlockActions.type,
         involving: Users.username,
-        yes: sql`(select count(*) from ${FlockMemberVotes} where ${FlockMemberVotes.actionId} = ${FlockMemberActions.id} and ${FlockMemberVotes.vote} = 1)`.mapWith(
+        yes: sql`(select count(*) from ${FlockMemberVotes} where ${FlockMemberVotes.actionId} = ${FlockActions.id} and ${FlockMemberVotes.vote} = 1)`.mapWith(
           Number,
         ),
-        no: sql`(select count(*) from ${FlockMemberVotes} where ${FlockMemberVotes.actionId} = ${FlockMemberActions.id} and ${FlockMemberVotes.vote} = 0)`.mapWith(
+        no: sql`(select count(*) from ${FlockMemberVotes} where ${FlockMemberVotes.actionId} = ${FlockActions.id} and ${FlockMemberVotes.vote} = 0)`.mapWith(
           Number,
         ),
-        publicId: FlockMemberActions.publicId,
+        publicId: FlockActions.publicId,
       })
-      .from(FlockMemberActions)
+      .from(FlockActions)
       .innerJoin(
         FlockMemberVotes,
-        eq(FlockMemberVotes.actionId, FlockMemberActions.id),
+        eq(FlockMemberVotes.actionId, FlockActions.id),
+      )
+      .innerJoin(
+        FlockMemberActions,
+        eq(FlockMemberActions.actionId, FlockActions.id),
       )
       .innerJoin(Users, eq(Users.id, FlockMemberActions.userId))
       .where(
         and(
-          eq(FlockMemberActions.open, true),
-          eq(FlockMemberActions.flockId, ctx.flock.id),
+          eq(FlockActions.open, true),
+          eq(FlockActions.flockId, ctx.flock.id),
         ),
       )
-      .groupBy(FlockMemberActions.id)
+      .groupBy(FlockActions.id)
       .orderBy(Users.username);
 
     return { memberVotes };
@@ -175,14 +180,18 @@ export const flockRouter = router({
       // check if an invite is already active
       const [invite] = await ctx.db
         .select()
-        .from(FlockMemberActions)
+        .from(FlockActions)
+        .innerJoin(
+          FlockMemberActions,
+          eq(FlockMemberActions.actionId, FlockActions.id),
+        )
         .innerJoin(Users, eq(Users.id, FlockMemberActions.userId))
         .where(
           and(
-            eq(FlockMemberActions.flockId, ctx.flock.id),
+            eq(FlockActions.flockId, ctx.flock.id),
             eq(Users.id, user.id),
-            eq(FlockMemberActions.open, true),
-            eq(FlockMemberActions.type, "INVITE"),
+            eq(FlockActions.open, true),
+            eq(FlockActions.type, "INVITE"),
           ),
         );
       if (invite)
@@ -191,13 +200,15 @@ export const flockRouter = router({
           message: "Outstanding Vote Session",
         });
 
-      const [{ insertId }] = await ctx.db.insert(FlockMemberActions).values({
+      const [{ insertId }] = await ctx.db.insert(FlockActions).values({
         flockId: ctx.flock.id,
-        userId: user.id,
         type: "INVITE",
         creator: ctx.user.id,
         publicId: nanoid(16),
       });
+      await ctx.db
+        .insert(FlockMemberActions)
+        .values({ actionId: insertId, userId: user.id });
       await ctx.db.insert(FlockMemberVotes).values({
         userId: ctx.user.id,
         vote: true,
@@ -246,14 +257,18 @@ export const flockRouter = router({
       // check if a kick is already active
       const [kick] = await ctx.db
         .select()
-        .from(FlockMemberActions)
+        .from(FlockActions)
+        .innerJoin(
+          FlockMemberActions,
+          eq(FlockMemberActions.actionId, FlockActions.id),
+        )
         .innerJoin(Users, eq(Users.id, FlockMemberActions.userId))
         .where(
           and(
-            eq(FlockMemberActions.flockId, ctx.flock.id),
+            eq(FlockActions.flockId, ctx.flock.id),
             eq(Users.id, user.id),
-            eq(FlockMemberActions.open, true),
-            eq(FlockMemberActions.type, "KICK"),
+            eq(FlockActions.open, true),
+            eq(FlockActions.type, "KICK"),
           ),
         );
       if (kick)
@@ -262,12 +277,15 @@ export const flockRouter = router({
           message: "Outstanding Vote Session",
         });
 
-      const [{ insertId }] = await ctx.db.insert(FlockMemberActions).values({
+      const [{ insertId }] = await ctx.db.insert(FlockActions).values({
         flockId: ctx.flock.id,
-        userId: user.id,
         type: "KICK",
         creator: ctx.user.id,
         publicId: nanoid(16),
+      });
+      await ctx.db.insert(FlockMemberActions).values({
+        actionId: insertId,
+        userId: user.id,
       });
       await ctx.db.insert(FlockMemberVotes).values({
         userId: ctx.user.id,
@@ -275,7 +293,7 @@ export const flockRouter = router({
         actionId: insertId,
       });
     }),
-  memberVote: protectedProcedure
+  vote: protectedProcedure
     .input(z.object({ publicId: z.string(), vote: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       if (!ctx.flock)
@@ -286,17 +304,21 @@ export const flockRouter = router({
 
       const [action] = await ctx.db
         .select({
-          id: FlockMemberActions.id,
+          id: FlockActions.id,
           user: FlockMemberActions.userId,
-          type: FlockMemberActions.type,
-          flockId: FlockMemberActions.flockId,
+          type: FlockActions.type,
+          flockId: FlockActions.flockId,
         })
-        .from(FlockMemberActions)
+        .from(FlockActions)
+        .leftJoin(
+          FlockMemberActions,
+          eq(FlockMemberActions.actionId, FlockActions.id),
+        )
         .where(
           and(
-            eq(FlockMemberActions.publicId, input.publicId),
-            eq(FlockMemberActions.open, true),
-            eq(FlockMemberActions.flockId, ctx.flock.id),
+            eq(FlockActions.publicId, input.publicId),
+            eq(FlockActions.open, true),
+            eq(FlockActions.flockId, ctx.flock.id),
           ),
         );
 
@@ -304,6 +326,15 @@ export const flockRouter = router({
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Vote Session Not Found",
+        });
+
+      if (
+        (action.type === "INVITE" || action.type === "KICK") &&
+        action.user === ctx.user.id
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Cannot vote for yourself",
         });
 
       const [members] = await ctx.db
@@ -353,43 +384,47 @@ export const flockRouter = router({
 
       const yes = yesVotes ? yesVotes.votes : 0;
       const no = noVotes ? noVotes.votes : 0;
+      const yesAndNo = yes + no;
 
       // if majority voted or group size is small enough
       if (
         no >= majority ||
         yes >= majority ||
-        (members.count === 2 && (no === members.count || yes === members.count))
+        (yes === no && yesAndNo === members.count)
       ) {
         await ctx.db
-          .update(FlockMemberActions)
+          .update(FlockActions)
           .set({ open: false })
-          .where(eq(FlockMemberActions.id, action.id));
+          .where(eq(FlockActions.id, action.id));
 
-        // if vote is a no nothing happens
-        if (no >= majority || (no === members.count && members.count === 2)) {
-          await ctx.db
-            .update(FlockMemberActions)
-            .set({ outstanding: false })
-            .where(eq(FlockMemberActions.id, action.id));
+        // different actions
+        if (action.type === "INVITE" || action.type === "KICK") {
+          // if vote is a no nothing happens
+          if (no >= majority || (yes === no && yesAndNo === members.count)) {
+            await ctx.db
+              .update(FlockMemberActions)
+              .set({ outstanding: false })
+              .where(eq(FlockMemberActions.actionId, action.id));
 
-          return;
-        }
-
-        await ctx.db
-          .update(FlockMemberActions)
-          .set({ accepted: true })
-          .where(eq(FlockMemberActions.id, action.id));
-
-        // if a vote is a kick active = false, otherwise outstanding invite
-        if (action.type === "KICK") {
-          await ctx.db
-            .delete(FlockMembers)
-            .where(eq(FlockMembers.userId, action.user));
+            return;
+          }
 
           await ctx.db
-            .update(FlockMemberActions)
-            .set({ outstanding: false })
-            .where(eq(FlockMemberActions.id, action.id));
+            .update(FlockActions)
+            .set({ accepted: true })
+            .where(eq(FlockActions.id, action.id));
+
+          // if a vote is a kick active = false, otherwise outstanding invite
+          if (action.type === "KICK" && action.user) {
+            await ctx.db
+              .delete(FlockMembers)
+              .where(eq(FlockMembers.userId, action.user));
+
+            await ctx.db
+              .update(FlockMemberActions)
+              .set({ outstanding: false })
+              .where(eq(FlockMemberActions.actionId, action.id));
+          }
         }
       }
     }),
