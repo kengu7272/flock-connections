@@ -1,8 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { z } from "zod";
 
 import { client } from "~/client/utils/trpc";
 
+const searchSchema = z.object({
+  section: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_auth/flock/$flockId/")({
+  validateSearch: searchSchema,
   beforeLoad: async ({ params: { flockId } }) => {
     const flock = await client.user.getFlock.query();
     if (!flock || flock.flock.name != flockId)
