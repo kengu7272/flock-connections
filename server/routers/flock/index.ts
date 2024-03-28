@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, count, eq, or, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
@@ -190,14 +190,17 @@ export const flockRouter = router({
           and(
             eq(FlockActions.flockId, ctx.flock.id),
             eq(Users.id, user.id),
-            eq(FlockActions.open, true),
+            or(
+              eq(FlockActions.open, true),
+              eq(FlockMemberActions.outstanding, true),
+            ),
             eq(FlockActions.type, "INVITE"),
           ),
         );
       if (invite)
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Outstanding Vote Session",
+          message: "Outstanding Vote Session or Invite",
         });
 
       const [{ insertId }] = await ctx.db.insert(FlockActions).values({
@@ -274,7 +277,7 @@ export const flockRouter = router({
       if (kick)
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Outstanding Vote Session",
+          message: "Outstanding Vote Session or Invite",
         });
 
       const [{ insertId }] = await ctx.db.insert(FlockActions).values({
