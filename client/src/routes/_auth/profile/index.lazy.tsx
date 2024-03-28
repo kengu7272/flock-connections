@@ -17,9 +17,13 @@ export const Route = createLazyFileRoute("/_auth/profile/")({
 });
 
 function Profile() {
-  const userInfo = trpc.user.userInfo.useQuery();
-  const flock = trpc.user.getFlock.useQuery();
+  const { userInfo: initialUserInfo, flock: initialFlock } = Route.useLoaderData();
+
+  const userInfo = trpc.user.userInfo.useQuery(undefined, { initialData: initialUserInfo });
+  const flock = trpc.user.getFlock.useQuery(undefined, { initialData: initialFlock });
   const utils = trpc.useContext();
+
+  const [profilePicture, setProfilePicture] = useState(userInfo.data?.picture ?? "");
 
   const updateProfile = trpc.user.updateProfile.useMutation({
     onSuccess: () => {
@@ -72,7 +76,7 @@ function Profile() {
           <div className="flex w-full flex-col items-center gap-4 px-2 lg:px-20">
             <img
               onClick={() => setSelectPicture((prev) => !prev)}
-              src={userInfo.data?.picture ?? ""}
+              src={profilePicture}
               className="h-16 w-16 rounded-full duration-200 hover:scale-110"
               alt="Profile Picture"
             />
@@ -81,7 +85,7 @@ function Profile() {
                 <span className="font-semibold">
                   Upload a new Profile Picture
                 </span>
-                <Uploader />
+                <Uploader setProfilePicture={setProfilePicture} />
               </div>
             )}
           </div>
@@ -149,7 +153,7 @@ function Profile() {
   );
 }
 
-function Uploader() {
+function Uploader({ setProfilePicture }: { setProfilePicture: React.Dispatch<React.SetStateAction<string>>} ) {
   const [files, setFiles] = useState<File[]>([]);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
@@ -159,8 +163,9 @@ function Uploader() {
   const { startUpload, permittedFileInfo, isUploading } = useUploadThing(
     "profileImage",
     {
-      onClientUploadComplete: () => {
+      onClientUploadComplete: (res) => {
         toast.success("Profile Picture Updated");
+        setProfilePicture(res[0].serverData.imageUrl);
       },
       onUploadError: (e) => {
         toast.error(e.message);
