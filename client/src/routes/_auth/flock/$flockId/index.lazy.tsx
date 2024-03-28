@@ -18,8 +18,17 @@ export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
 });
 
 function Flock() {
+  const navigate = useNavigate();
   const { flockId } = Route.useParams();
   const { groupInfo } = Route.useLoaderData();
+
+  const { section: sectionParam } = Route.useSearch();
+  if (!sectionParam)
+    navigate({
+      to: "/flock" + "/" + flockId,
+      search: { section: "Members" },
+      replace: true,
+    });
 
   const sections = [
     {
@@ -31,8 +40,6 @@ function Flock() {
       component: <Voting />,
     },
   ];
-
-  const [selected, setSelected] = useState(sections[0].name);
 
   return (
     <div className="w-full py-24">
@@ -46,10 +53,16 @@ function Flock() {
           {sections.map((section) => (
             <button
               key={section.name}
-              onClick={() => setSelected(section.name)}
+              onClick={() =>
+                navigate({
+                  to: "/flock" + "/" + flockId,
+                  search: { section: section.name },
+                  replace: true,
+                })
+              }
               className={clsx({
                 "px-2 text-lg hover:text-slate-100 active:text-slate-200": true,
-                "font-semibold": selected === section.name,
+                "font-semibold": sectionParam === section.name,
               })}
             >
               {section.name}
@@ -58,7 +71,7 @@ function Flock() {
         </div>
 
         {sections.map(
-          (section) => selected === section.name && section.component,
+          (section) => sectionParam === section.name && section.component,
         )}
       </main>
     </div>
