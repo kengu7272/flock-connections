@@ -108,7 +108,7 @@ function Profile() {
           onSubmit={handleSubmit(onSubmit)}
         >
           <div className="flex flex-col gap-2">
-            <label>Username (No Spaces)</label>
+            <label>Username</label>
             <input
               className="h-12 flex-grow rounded-lg bg-slate-800 p-2 text-white focus:outline-none"
               placeholder={userInfo.data?.username}
