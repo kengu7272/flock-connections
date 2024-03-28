@@ -60,7 +60,7 @@ function Profile() {
     onError: (e) => toast.error(e.message),
   });
 
-  const [selectPicture, setSelectPicture] = useState(true);
+  const [selectPicture, setSelectPicture] = useState(false);
 
   return (
     <div className="w-full py-24">
@@ -69,7 +69,7 @@ function Profile() {
           Edit Profile
         </span>
         <div className="flex flex-col items-center gap-2">
-          <div className="flex flex-col w-full items-center gap-4 px-2 lg:px-20">
+          <div className="flex w-full flex-col items-center gap-4 px-2 lg:px-20">
             <img
               onClick={() => setSelectPicture((prev) => !prev)}
               src={userInfo.data?.picture ?? ""}
@@ -77,7 +77,7 @@ function Profile() {
               alt="Profile Picture"
             />
             {selectPicture && (
-              <div className="w-full flex flex-col items-center gap-y-2">
+              <div className="flex w-full flex-col items-center gap-y-2">
                 <span className="font-semibold">
                   Upload a new Profile Picture
                 </span>
@@ -157,10 +157,10 @@ function Uploader() {
 
   const [progress, setProgress] = useState(0);
   const { startUpload, permittedFileInfo, isUploading } = useUploadThing(
-    "flockImage",
+    "profileImage",
     {
       onClientUploadComplete: () => {
-        toast.success("Profile Picture Updated")
+        toast.success("Profile Picture Updated");
       },
       onUploadError: (e) => {
         toast.error(e.message);

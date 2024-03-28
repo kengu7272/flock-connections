@@ -30,7 +30,7 @@ export const Route = createRootRoute({
         transformer: SuperJSON,
         links: [
           httpBatchLink({
-            url: `${window.location.origin}/trpc`,
+            url: `${window.location.origin}/api/trpc`,
           }),
         ],
       }),

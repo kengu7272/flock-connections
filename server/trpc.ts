@@ -40,7 +40,7 @@ export const { router } = t;
 
 // trpc middleware server from @hono/trpc-server but setting context manually
 export const trpcServer = ({
-  endpoint = "/trpc",
+  endpoint = "/api/trpc",
   ...rest
 }: tRPCOptions): MiddlewareHandler => {
   return async (c) => {

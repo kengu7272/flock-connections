@@ -1,14 +1,8 @@
 import { Hono } from "hono";
-import { createRouteHandler } from "uploadthing/server";
 
 import { lucia } from "../auth";
 import { Flock, Session, User } from "../db/src/types";
-import { uploadRouter } from "../uploadthing.ts";
 import login from "./login.ts";
-
-const { GET, POST } = createRouteHandler({
-  router: uploadRouter,
-});
 
 const hono = new Hono<{
   Variables: {
@@ -17,12 +11,6 @@ const hono = new Hono<{
     session: Session | null;
   };
 }>();
-
-//uploadthing
-const ut = hono
-  .get("/", (context) => GET(context.req.raw))
-  .post("/", (context) => POST(context.req.raw));
-hono.route("/uploadthing", ut);
 
 //routes
 hono.get("/logout", async (c) => {

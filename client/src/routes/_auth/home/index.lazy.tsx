@@ -60,10 +60,20 @@ function Home() {
                 </button>
                 {selectedInvite === invites.name && (
                   <div className="absolute right-0 top-full z-50 flex items-center rounded-lg bg-slate-700 p-2">
-                    <button onClick={() => acceptInvite.mutate({ name: selectedInvite })} className="text-green-500 hover:text-green-600 active:text-green-700">
+                    <button
+                      onClick={() =>
+                        acceptInvite.mutate({ name: selectedInvite })
+                      }
+                      className="text-green-500 hover:text-green-600 active:text-green-700"
+                    >
                       <Check className="h-7 w-7" />
                     </button>
-                    <button onClick={() => declineInvite.mutate({ name: selectedInvite })} className="text-red-500 hover:text-red-600 active:text-red-700">
+                    <button
+                      onClick={() =>
+                        declineInvite.mutate({ name: selectedInvite })
+                      }
+                      className="text-red-500 hover:text-red-600 active:text-red-700"
+                    >
                       <X className="h-7 w-7" />
                     </button>
                   </div>

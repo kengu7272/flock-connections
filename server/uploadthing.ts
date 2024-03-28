@@ -12,7 +12,7 @@ import { Users } from "./db/src/schema";
 const f = createUploadthing();
 
 export const uploadRouter = {
-  flockImage: f({
+  profileImage: f({
     image: {
       maxFileSize: "4MB",
       maxFileCount: 1,
@@ -25,12 +25,13 @@ export const uploadRouter = {
       return { userId: user?.userInfo.user.id };
     })
     .onUploadComplete(async ({ file, metadata }) => {
+      console.log("here", " ", metadata.userId);
       await db
         .update(Users)
         .set({ picture: file.url })
         .where(eq(Users.id, metadata.userId));
-    //@TODO 
-    //Delete file (if exists) on uploadthing
+      //@TODO
+      //Delete file (if exists) on uploadthing
     }),
 } satisfies FileRouter;
 
