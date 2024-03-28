@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import { Session, verifyRequestOrigin } from "lucia";
+import { createRouteHandler } from "uploadthing/server";
 
 import base from "./api/base";
 import { lucia } from "./auth";
@@ -15,6 +16,7 @@ import {
 import { Flock, User } from "./db/src/types.ts";
 import { appRouter } from "./routers/appRouter.ts";
 import { trpcServer } from "./trpc.ts";
+import { uploadRouter } from "./uploadthing.ts";
 
 const hono = new Hono<{
   Variables: {
@@ -25,7 +27,7 @@ const hono = new Hono<{
 }>();
 
 // middleware
-hono.use("*", async (c, next) => {
+hono.use("/api/*", async (c, next) => {
   // CSRF middleware
   if (c.req.method === "GET") {
     return next();
@@ -42,7 +44,7 @@ hono.use("*", async (c, next) => {
   }
   return next();
 });
-hono.use("*", async (c, next) => {
+hono.use("/api/*", async (c, next) => {
   const sessionId = getCookie(c, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
     c.set("user", null);
@@ -77,7 +79,7 @@ hono.use("*", async (c, next) => {
   return next();
 });
 hono.use(
-  "/trpc/*",
+  "api/trpc/*",
   trpcServer({
     router: appRouter,
   }),
@@ -85,6 +87,14 @@ hono.use(
 
 // routes
 hono.route("/api", base);
+
+const { GET, POST } = createRouteHandler({
+  router: uploadRouter,
+});
+
+//uploadthing
+hono.get("/uploadthing", (context) => GET(context.req.raw));
+hono.post("/uploadthing", (context) => POST(context.req.raw));
 
 hono.notFound((c) => {
   return c.text("Nothing Here", 404);

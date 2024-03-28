@@ -1,5 +1,5 @@
 import { Google } from "arctic";
-import { Lucia, } from "lucia";
+import { Lucia } from "lucia";
 
 import "dotenv/config";
 
@@ -36,7 +36,7 @@ export const google = new Google(
   "http://localhost:3000/api/login/google/callback",
 );
 
-// server session 
+// server session
 // don't need to set cookies, middleware before every route
 // already handles that, this is mainly for uploadthing routes currently
 export const getServerSession = async (request: Request) => {
@@ -61,4 +61,3 @@ export const getServerSession = async (request: Request) => {
 
   return { userInfo: userInfo ?? null, session: session ?? null };
 };
-
