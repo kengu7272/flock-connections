@@ -431,4 +431,23 @@ export const flockRouter = router({
         }
       }
     }),
+  getOutstandingInvites: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.flock) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+    return await ctx.db
+      .select({ user: Users.username, picture: Users.picture })
+      .from(FlockActions)
+      .innerJoin(
+        FlockMemberActions,
+        eq(FlockMemberActions.actionId, FlockActions.id),
+      )
+      .innerJoin(Users, eq(Users.id, FlockMemberActions.userId))
+      .where(
+        and(
+          eq(FlockActions.type, "INVITE"),
+          eq(FlockMemberActions.outstanding, true),
+          eq(FlockActions.flockId, ctx.flock.id),
+        ),
+      );
+  }),
 });

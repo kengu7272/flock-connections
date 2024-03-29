@@ -5,6 +5,7 @@ import { Session, verifyRequestOrigin } from "lucia";
 import { createRouteHandler } from "uploadthing/server";
 
 import base from "./api/base";
+import { appRouter } from "./api/routers/appRouter.ts";
 import { lucia } from "./auth";
 import { db } from "./db/index.ts";
 import {
@@ -14,7 +15,6 @@ import {
   Users,
 } from "./db/src/schema.ts";
 import { Flock, User } from "./db/src/types.ts";
-import { appRouter } from "./routers/appRouter.ts";
 import { trpcServer } from "./trpc.ts";
 import { uploadRouter } from "./uploadthing.ts";
 
