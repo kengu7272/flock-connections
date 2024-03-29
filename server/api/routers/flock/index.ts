@@ -114,7 +114,7 @@ export const flockRouter = router({
           Number,
         ),
         publicId: FlockActions.publicId,
-        creator: creator.username
+        creator: creator.username,
       })
       .from(FlockActions)
       .innerJoin(
@@ -424,7 +424,8 @@ export const flockRouter = router({
       if (
         no >= majority ||
         yes >= majority ||
-        (yes === no && yesAndNo === members.count)
+        yesAndNo === members.count ||
+        yesAndNo === members.count - 1
       ) {
         await ctx.db
           .update(FlockActions)
@@ -434,13 +435,13 @@ export const flockRouter = router({
         // different actions
         if (action.type === "INVITE" || action.type === "KICK") {
           // if vote is a no nothing happens
-          if (no >= majority || (yes === no && yesAndNo === members.count)) {
+          if (no >= majority || yesAndNo === members.count) {
             await ctx.db
               .update(FlockMemberActions)
               .set({ outstanding: false })
               .where(eq(FlockMemberActions.actionId, action.id));
 
-            return;
+            return { consensus: "No" };
           }
 
           await ctx.db
@@ -450,6 +451,15 @@ export const flockRouter = router({
 
           // if a vote is a kick active = false, otherwise outstanding invite
           if (action.type === "KICK" && action.user) {
+            if (yes === no && yesAndNo === members.count - 1) {
+              await ctx.db
+                .update(FlockMemberActions)
+                .set({ outstanding: false })
+                .where(eq(FlockMemberActions.actionId, action.id));
+
+              return { consensus: "No" };
+            }
+
             await ctx.db
               .delete(FlockMembers)
               .where(eq(FlockMembers.userId, action.user));
@@ -458,10 +468,15 @@ export const flockRouter = router({
               .update(FlockMemberActions)
               .set({ outstanding: false })
               .where(eq(FlockMemberActions.actionId, action.id));
+
+            return { consensus: "Yes" };
           }
         } else if (action.type === "UPDATE PICTURE") {
-          if (no >= majority || (yes === no && yesAndNo === members.count)) {
-            return;
+          if (
+            no >= majority ||
+            (yes === no && yesAndNo === members.count - 1)
+          ) {
+            return { consensus: "No" };
           }
 
           const [picture] = await ctx.db
@@ -469,6 +484,7 @@ export const flockRouter = router({
             .from(FlockImageActions)
             .where(eq(FlockImageActions.actionId, action.id));
           await ctx.db.update(Flocks).set({ picture: picture.url });
+          return { consensus: "Yes" };
         }
       }
     }),
