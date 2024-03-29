@@ -110,10 +110,9 @@ export const FlockMemberVotes = mysqlTable(
     actionId: bigint("actionId", { mode: "number", unsigned: true })
       .notNull()
       .references(() => FlockActions.id, { onDelete: "cascade" }),
-    userId: bigint("userId", { mode: "number", unsigned: true }).references(
-      () => Users.id,
-      { onDelete: "cascade" },
-    ).notNull(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .references(() => Users.id, { onDelete: "cascade" })
+      .notNull(),
     vote: boolean("vote").notNull(),
     createdAt: datetime("createdAt", { mode: "date" })
       .notNull()
