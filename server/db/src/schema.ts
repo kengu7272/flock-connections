@@ -6,9 +6,9 @@ import {
   datetime,
   mysqlEnum,
   mysqlTable,
-  primaryKey,
   serial,
   text,
+  unique,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -93,9 +93,17 @@ export const FlockMemberActions = mysqlTable("flockMemberAction", {
   outstanding: boolean("outstanding").notNull().default(true),
 });
 
+export const FlockImageActions = mysqlTable("flockImageAction", {
+  actionId: bigint("actionId", { mode: "number", unsigned: true })
+    .references(() => FlockActions.id, { onDelete: "cascade" })
+    .primaryKey(),
+  picture: text("picture").default("").notNull(),
+});
+
 export const FlockMemberVotes = mysqlTable(
   "flockMemberVote",
   {
+    id: serial("id").primaryKey(),
     actionId: bigint("actionId", { mode: "number", unsigned: true })
       .notNull()
       .references(() => FlockActions.id, { onDelete: "cascade" }),
@@ -105,7 +113,7 @@ export const FlockMemberVotes = mysqlTable(
     ),
     vote: boolean("vote").notNull(),
   },
-  (table) => ({ pk: primaryKey({ columns: [table.actionId, table.userId] }) }),
+  (table) => ({ unq: unique().on(table.actionId, table.userId) }),
 );
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);

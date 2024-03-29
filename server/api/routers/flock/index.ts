@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import {
   FlockActions,
+  FlockImageActions,
   FlockMemberActions,
   FlockMembers,
   FlockMemberVotes,
@@ -428,6 +429,16 @@ export const flockRouter = router({
               .set({ outstanding: false })
               .where(eq(FlockMemberActions.actionId, action.id));
           }
+        } else if (action.type === "UPDATE PICTURE") {
+          if (no >= majority || (yes === no && yesAndNo === members.count)) {
+            return;
+          }
+
+          const [picture] = await ctx.db
+            .select({ url: FlockImageActions.picture })
+            .from(FlockImageActions)
+            .where(eq(FlockImageActions.actionId, action.id));
+          await ctx.db.update(Flocks).set({ picture: picture.url });
         }
       }
     }),
