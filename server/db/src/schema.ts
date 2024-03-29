@@ -80,6 +80,9 @@ export const FlockActions = mysqlTable("flockAction", {
   type: mysqlEnum("type", Actions).notNull(),
   open: boolean("open").notNull().default(true),
   accepted: boolean("accepted").notNull().default(false),
+  createdAt: datetime("createdAt", { mode: "date" })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const FlockMemberActions = mysqlTable("flockMemberAction", {
@@ -112,6 +115,9 @@ export const FlockMemberVotes = mysqlTable(
       { onDelete: "cascade" },
     ),
     vote: boolean("vote").notNull(),
+    createdAt: datetime("createdAt", { mode: "date" })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({ unq: unique().on(table.actionId, table.userId) }),
 );

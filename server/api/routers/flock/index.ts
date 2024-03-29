@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { and, count, eq, or, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/mysql-core";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
@@ -100,10 +101,12 @@ export const flockRouter = router({
         message: "You're not in a Flock",
       });
 
+    const involving = alias(Users, "involving");
+    const creator = alias(Users, "creator");
     const memberVotes = await ctx.db
       .select({
         type: FlockActions.type,
-        involving: Users.username,
+        involving: involving.username,
         yes: sql`(select count(*) from ${FlockMemberVotes} where ${FlockMemberVotes.actionId} = ${FlockActions.id} and ${FlockMemberVotes.vote} = 1)`.mapWith(
           Number,
         ),
@@ -111,6 +114,7 @@ export const flockRouter = router({
           Number,
         ),
         publicId: FlockActions.publicId,
+        creator: creator.username
       })
       .from(FlockActions)
       .innerJoin(
@@ -121,17 +125,51 @@ export const flockRouter = router({
         FlockMemberActions,
         eq(FlockMemberActions.actionId, FlockActions.id),
       )
-      .innerJoin(Users, eq(Users.id, FlockMemberActions.userId))
+      .innerJoin(involving, eq(involving.id, FlockMemberActions.userId))
+      .innerJoin(creator, eq(creator.id, FlockActions.creator))
       .where(
         and(
           eq(FlockActions.open, true),
           eq(FlockActions.flockId, ctx.flock.id),
+          or(eq(FlockActions.type, "INVITE"), eq(FlockActions.type, "KICK")),
         ),
       )
       .groupBy(FlockActions.id)
-      .orderBy(Users.username);
+      .orderBy(involving.username);
 
-    return { memberVotes };
+    const flockImageVotes = await ctx.db
+      .select({
+        yes: sql`(select count(*) from ${FlockMemberVotes} where ${FlockMemberVotes.actionId} = ${FlockActions.id} and ${FlockMemberVotes.vote} = 1)`.mapWith(
+          Number,
+        ),
+        no: sql`(select count(*) from ${FlockMemberVotes} where ${FlockMemberVotes.actionId} = ${FlockActions.id} and ${FlockMemberVotes.vote} = 0)`.mapWith(
+          Number,
+        ),
+        publicId: FlockActions.publicId,
+        imageUrl: FlockImageActions.picture,
+        creator: Users.username,
+      })
+      .from(FlockActions)
+      .innerJoin(
+        FlockMemberVotes,
+        eq(FlockMemberVotes.actionId, FlockActions.id),
+      )
+      .innerJoin(
+        FlockImageActions,
+        eq(FlockImageActions.actionId, FlockActions.id),
+      )
+      .innerJoin(Users, eq(Users.id, FlockActions.creator))
+      .where(
+        and(
+          eq(FlockActions.open, true),
+          eq(FlockActions.flockId, ctx.flock.id),
+          eq(FlockActions.type, "UPDATE PICTURE"),
+        ),
+      )
+      .groupBy(FlockActions.id)
+      .orderBy(FlockActions.createdAt);
+
+    return { memberVotes, flockImageVotes };
   }),
   createInvite: protectedProcedure
     .input(MemberInviteSchema)
