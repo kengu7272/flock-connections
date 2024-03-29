@@ -84,7 +84,7 @@ function Profile() {
             <img
               onClick={() => setSelectPicture((prev) => !prev)}
               src={profilePicture}
-              className="h-16 w-16 rounded-full duration-200 hover:scale-110"
+              className="h-16 w-16 rounded-full duration-200 transition-transform hover:scale-110"
               alt="Profile Picture"
             />
             {selectPicture && (

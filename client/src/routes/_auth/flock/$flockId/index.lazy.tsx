@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { useDropzone } from "@uploadthing/react/hooks";
 import clsx from "clsx";
-import { Check, Menu, X } from "lucide-react";
+import { Check, FolderUp, Loader2, Menu, X, XCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { generateClientDropzoneAccept } from "uploadthing/client";
 
 import User from "~/client/src/components/User";
+import { useUploadThing } from "~/client/src/utils/uploadthing";
 import { trpc } from "~/client/utils/trpc";
 import {
   MemberInviteSchema,
@@ -45,11 +48,31 @@ function Flock() {
     },
   ];
 
+  const [updatePicture, setUpdatePicture] = useState(false);
+  const setPicture = useCallback(
+    (value: boolean) => setUpdatePicture(value),
+    [],
+  );
+
+  useEffect(() => {
+    document.body.addEventListener("click", () => setPicture(false));
+  }, []);
+
   return (
     <div className="w-full py-24">
       <main className="items-center-center mx-auto flex w-[95%] flex-col space-y-4 rounded-lg bg-slate-700 px-4 py-6 lg:w-3/5 xl:w-2/5">
         <div className="flex items-center gap-3">
-          <img className="h-16 w-16 rounded-full" src={groupInfo.picture} />
+          <div className="relative">
+            <img
+              onClick={(e) => {
+                e.stopPropagation();
+                setUpdatePicture((prev) => !prev);
+              }}
+              className="h-16 w-16 rounded-full transition-transform hover:scale-110"
+              src={groupInfo.picture}
+            />
+            {updatePicture && <ImageUpdater setImageStatus={setPicture} />}
+          </div>
           <span className="text-2xl font-bold">{flockId}</span>
         </div>
         <p className="text-sm">{groupInfo.description}</p>
@@ -125,6 +148,12 @@ const Members = ({ name }: { name: string }) => {
       navigate({ to: "/home" });
     },
   });
+
+  useEffect(() => {
+    document.body.addEventListener("click", () => {
+      setSelectedUser("");
+    });
+  }, []);
 
   return (
     <div className="mx-auto w-full space-y-2">
@@ -234,58 +263,114 @@ const Voting = () => {
   });
 
   return (
-    <div className="mx-auto w-full space-y-2">
-      <span>Member Actions</span>
-      <div className="max-h-3/4 space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
-        {votes.data?.memberVotes.length ? (
-          votes.data.memberVotes.map((vote) => (
-            <div
-              key={vote.publicId}
-              className="grid grid-cols-3 rounded-lg p-2 hover:bg-slate-700"
-            >
-              <div>
-                <span className="block font-semibold">Username</span>
-                <span>{vote.involving}</span>
-              </div>
-              <div className="text-center">
-                <span className="block font-semibold">Action</span>
-                <span>{vote.type}</span>
-              </div>
-              <div className="flex items-center justify-end gap-2">
-                <div className="flex flex-col items-center">
-                  <button
-                    onClick={() =>
-                      castMemberVote.mutate({
-                        vote: true,
-                        publicId: vote.publicId,
-                      })
-                    }
-                    className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
-                  >
-                    Yes
-                  </button>
-                  <span>({vote.yes})</span>
+    <div className="space-y-4">
+      <div className="mx-auto w-full space-y-2">
+        <span>Member Actions</span>
+        <div className="max-h-3/4 space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
+          {votes.data?.memberVotes.length ? (
+            votes.data.memberVotes.map((vote) => (
+              <div
+                key={vote.publicId}
+                className="grid grid-cols-3 rounded-lg p-2 hover:bg-slate-700"
+              >
+                <div>
+                  <span className="block font-semibold">Username</span>
+                  <span>{vote.involving}</span>
                 </div>
-                <div className="flex flex-col items-center">
-                  <button
-                    onClick={() =>
-                      castMemberVote.mutate({
-                        vote: false,
-                        publicId: vote.publicId,
-                      })
-                    }
-                    className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
-                  >
-                    No
-                  </button>
-                  <span>({vote.no})</span>
+                <div className="text-center">
+                  <span className="block font-semibold">Action</span>
+                  <span>{vote.type}</span>
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={() =>
+                        castMemberVote.mutate({
+                          vote: true,
+                          publicId: vote.publicId,
+                        })
+                      }
+                      className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                    >
+                      Yes
+                    </button>
+                    <span>({vote.yes})</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={() =>
+                        castMemberVote.mutate({
+                          vote: false,
+                          publicId: vote.publicId,
+                        })
+                      }
+                      className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                    >
+                      No
+                    </button>
+                    <span>({vote.no})</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <span>No active votes regarding members</span>
-        )}
+            ))
+          ) : (
+            <span>No active votes regarding members</span>
+          )}
+        </div>
+      </div>
+      <div className="mx-auto w-full space-y-2">
+        <span>Flock Actions</span>
+        <div className="max-h-3/4 space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
+          {votes.data?.memberVotes.length ? (
+            votes.data.memberVotes.map((vote) => (
+              <div
+                key={vote.publicId}
+                className="grid grid-cols-3 rounded-lg p-2 hover:bg-slate-700"
+              >
+                <div>
+                  <span className="block font-semibold">Username</span>
+                  <span>{vote.involving}</span>
+                </div>
+                <div className="text-center">
+                  <span className="block font-semibold">Action</span>
+                  <span>{vote.type}</span>
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={() =>
+                        castMemberVote.mutate({
+                          vote: true,
+                          publicId: vote.publicId,
+                        })
+                      }
+                      className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                    >
+                      Yes
+                    </button>
+                    <span>({vote.yes})</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={() =>
+                        castMemberVote.mutate({
+                          vote: false,
+                          publicId: vote.publicId,
+                        })
+                      }
+                      className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                    >
+                      No
+                    </button>
+                    <span>({vote.no})</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <span>No active votes regarding the Flock</span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -312,6 +397,114 @@ const Invites = () => {
             <span>No Outstanding Invites</span>
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+const ImageUpdater = ({
+  setImageStatus,
+}: {
+  setImageStatus: (value: boolean) => void;
+}) => {
+  const [files, setFiles] = useState<File[]>([]);
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setFiles(acceptedFiles);
+  }, []);
+
+  const [progress, setProgress] = useState(0);
+  const { startUpload, permittedFileInfo, isUploading } = useUploadThing(
+    "flockImage",
+    {
+      onClientUploadComplete: () => {
+        toast.success("Voting Session Created");
+        setFiles([]);
+        setImageStatus(false);
+      },
+      onUploadError: (e) => {
+        toast.error(e.message);
+      },
+      onUploadProgress: (p) => {
+        setProgress(p);
+      },
+    },
+  );
+
+  const fileTypes = permittedFileInfo?.config
+    ? Object.keys(permittedFileInfo?.config)
+    : [];
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: fileTypes ? generateClientDropzoneAccept(fileTypes) : undefined,
+    maxFiles: 1,
+  });
+
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="absolute left-0 top-full mt-4 w-72 space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4"
+    >
+      <span className="block whitespace-nowrap text-center">
+        Suggest a New Image
+      </span>
+      <div className="flex w-full flex-col items-center justify-center gap-2 text-slate-50">
+        <div
+          className="relative flex h-32 w-full cursor-pointer items-center justify-center rounded-lg bg-slate-700"
+          {...getRootProps()}
+        >
+          <div
+            style={{ width: `${progress}%` }}
+            className="absolute bottom-0 left-0 top-0 z-0 h-full bg-slate-600/90 transition-[width]"
+          />
+          <input {...getInputProps()} />
+          {isUploading ? (
+            <div className="z-10 flex items-center justify-center gap-4 text-sm">
+              <Loader2 strokeWidth={1.25} className="h-9 w-9 animate-spin" />
+              <div className="flex flex-col items-center justify-center">
+                <span>
+                  Uploading {files.length} File{files.length > 1 && "s"}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="z-10 flex items-center justify-center gap-4 text-sm">
+              <FolderUp strokeWidth={1.25} className="h-9 w-9" />
+              <div className="flex flex-col items-center justify-center">
+                <span>
+                  {files.length
+                    ? `${files.length} File${files.length > 1 ? "s" : ""}`
+                    : "Upload your file"}
+                </span>
+                {!files.length && <span>(4 MB)</span>}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex w-fit flex-col items-center justify-end gap-2">
+          {!!files.length && !isUploading && (
+            <button
+              className="flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium"
+              disabled={files.length === 0 || isUploading}
+              onClick={() => setFiles([])}
+            >
+              <XCircle className="h-4 w-4" />
+              Clear Files
+            </button>
+          )}
+          <button
+            onClick={() => startUpload(files)}
+            className={clsx({
+              "inline-flex items-center gap-2 rounded-md bg-sky-500 px-5 py-2 transition-colors":
+                true,
+              "opacity-50": files.length === 0,
+              "active:bg-slate-700 enabled:hover:bg-sky-600": files.length > 0,
+            })}
+            disabled={files.length === 0 || isUploading}
+          >
+            {isUploading ? "Uploading" : "Create Vote Session"}
+          </button>
+        </div>
       </div>
     </div>
   );
