@@ -254,7 +254,7 @@ const Members = ({ name }: { name: string }) => {
 const Voting = () => {
   const votes = trpc.flock.getVotes.useQuery();
 
-  const castMemberVote = trpc.flock.vote.useMutation({
+  const castVote = trpc.flock.vote.useMutation({
     onSuccess: () => {
       toast.success("Successfully Voted");
       votes.refetch();
@@ -266,26 +266,32 @@ const Voting = () => {
     <div className="space-y-4">
       <div className="mx-auto w-full space-y-2">
         <span>Member Actions</span>
-        <div className="max-h-3/4 space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
+        <div className="space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
           {votes.data?.memberVotes.length ? (
             votes.data.memberVotes.map((vote) => (
               <div
                 key={vote.publicId}
-                className="grid grid-cols-3 rounded-lg p-2 hover:bg-slate-700"
+                className="flex flex-col items-center gap-4 rounded-lg p-2 hover:bg-slate-700"
               >
-                <div>
-                  <span className="block font-semibold">Username</span>
-                  <span>{vote.involving}</span>
-                </div>
-                <div className="text-center">
-                  <span className="block font-semibold">Action</span>
-                  <span>{vote.type}</span>
+                <div className="flex flex-col lg:flex-row gap-4 lg:gap-0 justify-between w-full truncate">
+                  <div className="text-center">
+                    <span className="block font-semibold">Username</span>
+                    <span>{vote.involving}</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block font-semibold">Action</span>
+                    <span>{vote.type}</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block font-semibold">Creator</span>
+                    <span>{vote.creator}</span>
+                  </div>
                 </div>
                 <div className="flex items-center justify-end gap-2">
                   <div className="flex flex-col items-center">
                     <button
                       onClick={() =>
-                        castMemberVote.mutate({
+                        castVote.mutate({
                           vote: true,
                           publicId: vote.publicId,
                         })
@@ -299,7 +305,7 @@ const Voting = () => {
                   <div className="flex flex-col items-center">
                     <button
                       onClick={() =>
-                        castMemberVote.mutate({
+                        castVote.mutate({
                           vote: false,
                           publicId: vote.publicId,
                         })
@@ -320,52 +326,10 @@ const Voting = () => {
       </div>
       <div className="mx-auto w-full space-y-2">
         <span>Flock Actions</span>
-        <div className="max-h-3/4 space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
-          {votes.data?.memberVotes.length ? (
-            votes.data.memberVotes.map((vote) => (
-              <div
-                key={vote.publicId}
-                className="grid grid-cols-3 rounded-lg p-2 hover:bg-slate-700"
-              >
-                <div>
-                  <span className="block font-semibold">Username</span>
-                  <span>{vote.involving}</span>
-                </div>
-                <div className="text-center">
-                  <span className="block font-semibold">Action</span>
-                  <span>{vote.type}</span>
-                </div>
-                <div className="flex items-center justify-end gap-2">
-                  <div className="flex flex-col items-center">
-                    <button
-                      onClick={() =>
-                        castMemberVote.mutate({
-                          vote: true,
-                          publicId: vote.publicId,
-                        })
-                      }
-                      className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
-                    >
-                      Yes
-                    </button>
-                    <span>({vote.yes})</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <button
-                      onClick={() =>
-                        castMemberVote.mutate({
-                          vote: false,
-                          publicId: vote.publicId,
-                        })
-                      }
-                      className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
-                    >
-                      No
-                    </button>
-                    <span>({vote.no})</span>
-                  </div>
-                </div>
-              </div>
+        <div className="space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
+          {votes.data?.flockImageVotes ? (
+            votes.data.flockImageVotes.map((vote) => (
+              <div key={vote.publicId}></div>
             ))
           ) : (
             <span>No active votes regarding the Flock</span>
