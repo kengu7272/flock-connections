@@ -20,6 +20,6 @@ export const Route = createFileRoute("/_auth/flock/$flockId/")({
     const user = await client.user.userInfo.query();
     const outstandingInvites = await client.flock.getOutstandingInvites.query();
 
-    return { members, groupInfo, user, outstandingInvites, };
+    return { members, groupInfo, user, outstandingInvites };
   },
 });

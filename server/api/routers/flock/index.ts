@@ -14,6 +14,7 @@ import {
   Users,
 } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
+import { utapi } from "~/server/uploadthing";
 import { FlockSchema, MemberInviteSchema } from "~/server/validation";
 
 export const flockRouter = router({
@@ -476,6 +477,12 @@ export const flockRouter = router({
             no >= majority ||
             (yes === no && yesAndNo === members.count - 1)
           ) {
+            const [image] = await ctx.db
+              .select({ url: FlockImageActions.picture })
+              .from(FlockImageActions)
+              .where(eq(FlockImageActions.actionId, action.id));
+            const key = image.url.substring(image.url.indexOf("/f/") + 3); // we don't store the key so construct it
+            utapi.deleteFiles(key);
             return { consensus: "No" };
           }
 
