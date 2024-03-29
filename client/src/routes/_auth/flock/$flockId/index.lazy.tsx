@@ -39,6 +39,10 @@ function Flock() {
       name: "Voting",
       component: <Voting />,
     },
+    {
+      name: "Invites",
+      component: <Invites />,
+    },
   ];
 
   return (
@@ -149,12 +153,15 @@ const Members = ({ name }: { name: string }) => {
       </form>
       <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
         {membersList.data.map((member) => (
-          <div key={member.user.username} className="flex items-center">
+          <div
+            key={member.user.username}
+            className="flex items-center rounded-lg p-2 hover:bg-slate-700"
+          >
             <User
               picture={member.user.picture}
               username={member.user.username}
             />
-            <div className="relative ml-auto">
+            <div className="relative ml-auto flex items-center">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -167,7 +174,7 @@ const Members = ({ name }: { name: string }) => {
                 <Menu />
               </button>
               {selectedUser === member.user.username && (
-                <div className="absolute right-0 top-full z-50 min-w-24 whitespace-nowrap rounded-lg bg-slate-700 py-1">
+                <div className="absolute right-0 top-full z-50 min-w-24 whitespace-nowrap rounded-lg border border-slate-600 bg-slate-700 py-1">
                   {selectedUser !== user.username ? (
                     <button
                       onClick={() =>
@@ -278,6 +285,32 @@ const Voting = () => {
           ))
         ) : (
           <span>No active votes regarding members</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Invites = () => {
+  const { outstandingInvites } = Route.useLoaderData();
+
+  return (
+    <div className="mx-auto w-full space-y-2">
+      <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
+        {outstandingInvites.length ? (
+          outstandingInvites.map((invite, index) => (
+            <div
+              key={invite.user}
+              className="flex items-center gap-4 rounded-lg p-2 hover:bg-slate-700"
+            >
+              <span className="text-lg font-semibold">{index + 1}</span>
+              <User picture={invite.picture} username={invite.user} />
+            </div>
+          ))
+        ) : (
+          <div>
+            <span>No Outstanding Invites</span>
+          </div>
         )}
       </div>
     </div>
