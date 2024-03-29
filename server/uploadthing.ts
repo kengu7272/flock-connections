@@ -9,7 +9,12 @@ import {
 
 import { getServerSession } from "./auth";
 import { db } from "./db";
-import { FlockActions, FlockImageActions, Users } from "./db/src/schema";
+import {
+  FlockActions,
+  FlockImageActions,
+  FlockMemberVotes,
+  Users,
+} from "./db/src/schema";
 
 export const utapi = new UTApi();
 
@@ -71,6 +76,9 @@ export const uploadRouter = {
         creator: user.userInfo.user.id,
         publicId: nanoid(16),
       });
+      await db
+        .insert(FlockMemberVotes)
+        .values({ actionId, vote: true, userId: user.userInfo.user.id });
 
       return { flockId: user.userInfo.flock.id, actionId };
     })

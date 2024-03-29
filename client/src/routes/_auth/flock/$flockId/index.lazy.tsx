@@ -23,7 +23,11 @@ export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
 function Flock() {
   const navigate = useNavigate();
   const { flockId } = Route.useParams();
-  const { groupInfo } = Route.useLoaderData();
+  const { groupInfo: initialGroupInfo } = Route.useLoaderData();
+  const groupInfo = trpc.flock.getInfo.useQuery(
+    { name: flockId },
+    { initialData: initialGroupInfo },
+  );
 
   const { section: sectionParam } = Route.useSearch();
   if (!sectionParam)
@@ -69,13 +73,13 @@ function Flock() {
                 setUpdatePicture((prev) => !prev);
               }}
               className="h-16 w-16 rounded-full transition-transform hover:scale-110"
-              src={groupInfo.picture}
+              src={groupInfo.data.picture}
             />
             {updatePicture && <ImageUpdater setImageStatus={setPicture} />}
           </div>
           <span className="text-2xl font-bold">{flockId}</span>
         </div>
-        <p className="text-sm">{groupInfo.description}</p>
+        <p className="text-sm">{groupInfo.data.description}</p>
         <div>
           {sections.map((section) => (
             <button
@@ -256,12 +260,18 @@ const Members = ({ name }: { name: string }) => {
 
 const Voting = () => {
   const votes = trpc.flock.getVotes.useQuery();
+  const utils = trpc.useContext();
   console.log(votes.data?.flockImageVotes);
 
   const castVote = trpc.flock.vote.useMutation({
-    onSuccess: () => {
-      toast.success("Successfully Voted");
+    onSuccess: (res) => {
+      toast.success(
+        res?.consensus
+          ? `Voting finished, consesus is ${res.consensus}`
+          : "Successfully Voted",
+      );
       votes.refetch();
+      !!res && utils.flock.getInfo.refetch();
     },
     onError: (e) => toast.error(e.message),
   });
@@ -335,10 +345,51 @@ const Voting = () => {
             votes.data.flockImageVotes.map((vote) => (
               <div
                 key={vote.publicId}
-                className="flex flex-col items-center gap-4 rounded-lg p-2 hover:bg-slate-700"
+                className="flex flex-col items-center gap-4 space-y-4 rounded-lg p-2 hover:bg-slate-700"
               >
-                <div className="text-center">
-                  <span className="font-semibold">Action</span>
+                <div className="flex w-full items-center justify-between">
+                  <div className="text-center">
+                    <span className="block font-semibold">Action</span>
+                    <span>Update Image</span>
+                  </div>
+                  <img
+                    className="h-24 w-24 rounded-full transition-transform hover:scale-110"
+                    src={vote.imageUrl}
+                  />
+                  <div className="text-center">
+                    <span className="block font-semibold">Creator</span>
+                    <span>{vote.creator}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={() =>
+                        castVote.mutate({
+                          vote: true,
+                          publicId: vote.publicId,
+                        })
+                      }
+                      className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                    >
+                      Yes
+                    </button>
+                    <span>({vote.yes})</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={() =>
+                        castVote.mutate({
+                          vote: false,
+                          publicId: vote.publicId,
+                        })
+                      }
+                      className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                    >
+                      No
+                    </button>
+                    <span>({vote.no})</span>
+                  </div>
                 </div>
               </div>
             ))
@@ -382,6 +433,8 @@ const ImageUpdater = ({
 }: {
   setImageStatus: (value: boolean) => void;
 }) => {
+  const utils = trpc.useContext();
+
   const [files, setFiles] = useState<File[]>([]);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
@@ -395,6 +448,7 @@ const ImageUpdater = ({
         toast.success("Voting Session Created");
         setFiles([]);
         setImageStatus(false);
+        utils.flock.getVotes.refetch();
       },
       onUploadError: (e) => {
         toast.error(e.message);
