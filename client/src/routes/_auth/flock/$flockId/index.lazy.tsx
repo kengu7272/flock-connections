@@ -347,7 +347,7 @@ const Voting = () => {
                 key={vote.publicId}
                 className="flex flex-col items-center gap-4 space-y-4 rounded-lg p-2 hover:bg-slate-700"
               >
-                <div className="flex w-full items-center justify-between">
+                <div className="flex flex-col gap-4 lg:gap-0 lg:flex-row w-full items-center justify-between">
                   <div className="text-center">
                     <span className="block font-semibold">Action</span>
                     <span>Update Image</span>
