@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, eq, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -118,10 +118,6 @@ export const flockRouter = router({
       })
       .from(FlockActions)
       .innerJoin(
-        FlockMemberVotes,
-        eq(FlockMemberVotes.actionId, FlockActions.id),
-      )
-      .innerJoin(
         FlockMemberActions,
         eq(FlockMemberActions.actionId, FlockActions.id),
       )
@@ -151,10 +147,6 @@ export const flockRouter = router({
       })
       .from(FlockActions)
       .innerJoin(
-        FlockMemberVotes,
-        eq(FlockMemberVotes.actionId, FlockActions.id),
-      )
-      .innerJoin(
         FlockImageActions,
         eq(FlockImageActions.actionId, FlockActions.id),
       )
@@ -167,7 +159,7 @@ export const flockRouter = router({
         ),
       )
       .groupBy(FlockActions.id)
-      .orderBy(FlockActions.createdAt);
+      .orderBy(desc(FlockActions.createdAt));
 
     return { memberVotes, flockImageVotes };
   }),

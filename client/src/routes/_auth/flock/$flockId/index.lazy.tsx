@@ -98,7 +98,10 @@ function Flock() {
         </div>
 
         {sections.map(
-          (section) => sectionParam === section.name && section.component,
+          (section) =>
+            sectionParam === section.name && (
+              <div key={section.name}>{section.component}</div>
+            ),
         )}
       </main>
     </div>
@@ -253,6 +256,7 @@ const Members = ({ name }: { name: string }) => {
 
 const Voting = () => {
   const votes = trpc.flock.getVotes.useQuery();
+  console.log(votes.data?.flockImageVotes);
 
   const castVote = trpc.flock.vote.useMutation({
     onSuccess: () => {
@@ -273,7 +277,7 @@ const Voting = () => {
                 key={vote.publicId}
                 className="flex flex-col items-center gap-4 rounded-lg p-2 hover:bg-slate-700"
               >
-                <div className="flex flex-col lg:flex-row gap-4 lg:gap-0 justify-between w-full truncate">
+                <div className="flex w-full flex-col justify-between gap-4 truncate lg:flex-row lg:gap-0">
                   <div className="text-center">
                     <span className="block font-semibold">Username</span>
                     <span>{vote.involving}</span>
@@ -327,9 +331,16 @@ const Voting = () => {
       <div className="mx-auto w-full space-y-2">
         <span>Flock Actions</span>
         <div className="space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
-          {votes.data?.flockImageVotes ? (
+          {votes.data?.flockImageVotes.length ? (
             votes.data.flockImageVotes.map((vote) => (
-              <div key={vote.publicId}></div>
+              <div
+                key={vote.publicId}
+                className="flex flex-col items-center gap-4 rounded-lg p-2 hover:bg-slate-700"
+              >
+                <div className="text-center">
+                  <span className="font-semibold">Action</span>
+                </div>
+              </div>
             ))
           ) : (
             <span>No active votes regarding the Flock</span>
