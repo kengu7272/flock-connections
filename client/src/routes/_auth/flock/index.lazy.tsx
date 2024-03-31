@@ -55,7 +55,7 @@ function Flock() {
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <label>Name</label>
+            <label>Description</label>
             <textarea
               className={inputClass + " min-h-32"}
               placeholder="Tell everyone a little about your flock (Max 500)"

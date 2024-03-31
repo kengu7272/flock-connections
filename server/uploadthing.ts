@@ -11,7 +11,7 @@ import { getServerSession } from "./auth";
 import { db } from "./db";
 import {
   FlockActions,
-  FlockImageActions,
+  FlockDetailsActions,
   FlockMemberVotes,
   Users,
 } from "./db/src/schema";
@@ -64,6 +64,7 @@ export const uploadRouter = {
             eq(FlockActions.flockId, user.userInfo.flock.id),
             eq(FlockActions.type, "UPDATE PICTURE"),
             eq(FlockActions.open, true),
+            eq(FlockActions.creator, user.userInfo.user.id),
           ),
         );
 
@@ -84,7 +85,7 @@ export const uploadRouter = {
     })
     .onUploadComplete(async ({ file, metadata }) => {
       await db
-        .insert(FlockImageActions)
+        .insert(FlockDetailsActions)
         .values({ actionId: metadata.actionId, picture: file.url });
     }),
 } satisfies FileRouter;

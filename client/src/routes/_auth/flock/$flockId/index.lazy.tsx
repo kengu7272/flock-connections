@@ -7,11 +7,14 @@ import { Check, FolderUp, Loader2, Menu, X, XCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { generateClientDropzoneAccept } from "uploadthing/client";
+import { z } from "zod";
 
 import User from "~/client/src/components/User";
+import { inputClass } from "~/client/src/utils/classes";
 import { useUploadThing } from "~/client/src/utils/uploadthing";
 import { trpc } from "~/client/utils/trpc";
 import {
+  FlockSchema,
   MemberInviteSchema,
   MemberInviteSchemaType,
 } from "~/server/validation";
@@ -19,6 +22,9 @@ import {
 export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
   component: Flock,
 });
+
+const FlockDescriptionSchema = FlockSchema.pick({ description: true });
+type FlockDescriptionType = z.infer<typeof FlockDescriptionSchema>;
 
 function Flock() {
   const navigate = useNavigate();
@@ -52,15 +58,36 @@ function Flock() {
     },
   ];
 
-  const [updatePicture, setUpdatePicture] = useState(false);
-  const setPicture = useCallback(
-    (value: boolean) => setUpdatePicture(value),
-    [],
-  );
+  const [update, setUpdate] = useState("");
+  const setPicture = useCallback((value: string) => setUpdate(value), []);
 
   useEffect(() => {
-    document.body.addEventListener("click", () => setPicture(false));
+    document.body.addEventListener("click", () => {
+      setPicture("");
+    });
   }, []);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FlockDescriptionType>({
+    resolver: zodResolver(FlockSchema.pick({ description: true })),
+  });
+
+  const createDescriptionSession =
+    trpc.flock.createUpdateDescription.useMutation({
+      onSuccess: () => {
+        toast.success("Successfully Created Session");
+        groupInfo.refetch();
+        setUpdate("");
+      },
+      onError: (e) => toast.error(e.message),
+    });
+
+  const onSubmit: SubmitHandler<FlockDescriptionType> = ({ description }) => {
+    createDescriptionSession.mutate({ description });
+  };
 
   return (
     <div className="w-full py-24">
@@ -70,16 +97,58 @@ function Flock() {
             <img
               onClick={(e) => {
                 e.stopPropagation();
-                setUpdatePicture((prev) => !prev);
+                setUpdate((prev) => (prev === "image" ? "" : "image"));
               }}
               className="h-16 w-16 rounded-full transition-transform hover:scale-110"
               src={groupInfo.data.picture}
             />
-            {updatePicture && <ImageUpdater setImageStatus={setPicture} />}
+            {update === "image" && <ImageUpdater setImageStatus={setPicture} />}
           </div>
           <span className="text-2xl font-bold">{flockId}</span>
         </div>
-        <p className="text-sm">{groupInfo.data.description}</p>
+        <div className="relative">
+          <p
+            onClick={(e) => {
+              e.stopPropagation();
+              setUpdate((prev) =>
+                prev === "description" ? "" : "description",
+              );
+            }}
+            className="w-fit text-sm hover:cursor-default hover:text-gray-300"
+          >
+            {groupInfo.data.description}
+          </p>
+          {update === "description" && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute left-0 top-full z-50 whitespace-nowrap rounded-lg border border-slate-700 bg-slate-800 p-2"
+            >
+              <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+                <h1 className="text-center text-3xl font-bold">
+                  Update Description
+                </h1>
+                <div className="flex flex-col gap-2">
+                  <label>Description</label>
+                  <textarea
+                    className={inputClass + " min-h-32"}
+                    placeholder="Tell everyone a little about your flock (Max 500)"
+                    {...register("description")}
+                  />
+                  {errors.description && (
+                    <span className="text-sm text-red-500">
+                      {errors.description.message}
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="submit"
+                  value="Create Session"
+                  className="ml-auto block rounded-lg bg-sky-500 px-2 py-3 hover:bg-sky-600 active:bg-sky-700"
+                />
+              </form>
+            </div>
+          )}
+        </div>
         <div>
           {sections.map((section) => (
             <button
@@ -261,7 +330,6 @@ const Members = ({ name }: { name: string }) => {
 const Voting = () => {
   const votes = trpc.flock.getVotes.useQuery();
   const utils = trpc.useContext();
-  console.log(votes.data?.flockImageVotes);
 
   const castVote = trpc.flock.vote.useMutation({
     onSuccess: (res) => {
@@ -285,7 +353,7 @@ const Voting = () => {
             votes.data.memberVotes.map((vote) => (
               <div
                 key={vote.publicId}
-                className="flex flex-col items-center gap-4 rounded-lg p-2 hover:bg-slate-700"
+                className="flex flex-col items-center gap-4 rounded-lg bg-slate-700 px-2 py-4"
               >
                 <div className="flex w-full flex-col justify-between gap-4 truncate lg:flex-row lg:gap-0">
                   <div className="text-center">
@@ -341,58 +409,113 @@ const Voting = () => {
       <div className="mx-auto w-full space-y-2">
         <span>Flock Actions</span>
         <div className="space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
-          {votes.data?.flockImageVotes.length ? (
-            votes.data.flockImageVotes.map((vote) => (
-              <div
-                key={vote.publicId}
-                className="flex flex-col items-center gap-4 space-y-4 rounded-lg p-2 hover:bg-slate-700"
-              >
-                <div className="flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-                  <div className="text-center">
-                    <span className="block font-semibold">Action</span>
-                    <span>Update Image</span>
+          {votes.data?.flockDetailsVotes.length ? (
+            votes.data.flockDetailsVotes.map((vote) => {
+              if (vote.imageUrl)
+                return (
+                  <div
+                    key={vote.publicId}
+                    className="flex flex-col items-center gap-4 rounded-lg bg-slate-700 px-2 py-4"
+                  >
+                    <div className="flex w-full flex-col items-center gap-4 lg:flex-row lg:justify-center lg:gap-0">
+                      <div className="mx-auto text-center">
+                        <span className="block font-semibold">Action</span>
+                        <span>Update Image</span>
+                      </div>
+                      <img
+                        className="mx-auto h-24 w-24 rounded-full transition-transform hover:scale-110"
+                        src={vote.imageUrl}
+                      />
+                      <div className="mx-auto text-center">
+                        <span className="block font-semibold">Creator</span>
+                        <span>{vote.creator}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-col items-center">
+                        <button
+                          onClick={() =>
+                            castVote.mutate({
+                              vote: true,
+                              publicId: vote.publicId,
+                            })
+                          }
+                          className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                        >
+                          Yes
+                        </button>
+                        <span>({vote.yes})</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <button
+                          onClick={() =>
+                            castVote.mutate({
+                              vote: false,
+                              publicId: vote.publicId,
+                            })
+                          }
+                          className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                        >
+                          No
+                        </button>
+                        <span>({vote.no})</span>
+                      </div>
+                    </div>
                   </div>
-                  <img
-                    className="h-24 w-24 rounded-full transition-transform hover:scale-110"
-                    src={vote.imageUrl}
-                  />
-                  <div className="text-center">
-                    <span className="block font-semibold">Creator</span>
-                    <span>{vote.creator}</span>
+                );
+              else if (vote.description)
+                return (
+                  <div
+                    key={vote.publicId}
+                    className="flex flex-col items-center gap-4 rounded-lg bg-slate-700 px-2 py-4"
+                  >
+                    <div className="flex w-full flex-col items-center justify-center gap-y-4 lg:flex-row lg:gap-0">
+                      <div className="mx-auto text-center">
+                        <span className="block font-semibold">Action</span>
+                        <span>Update Description</span>
+                      </div>
+                      <div className="mx-auto text-center">
+                        <span className="block font-semibold">Creator</span>
+                        <span>{vote.creator}</span>
+                      </div>
+                      <div className="mx-auto flex items-center justify-end gap-2">
+                        <div className="flex flex-col items-center">
+                          <button
+                            onClick={() =>
+                              castVote.mutate({
+                                vote: true,
+                                publicId: vote.publicId,
+                              })
+                            }
+                            className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                          >
+                            Yes
+                          </button>
+                          <span>({vote.yes})</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <button
+                            onClick={() =>
+                              castVote.mutate({
+                                vote: false,
+                                publicId: vote.publicId,
+                              })
+                            }
+                            className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                          >
+                            No
+                          </button>
+                          <span>({vote.no})</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-full">
+                      <span className="w-full font-semibold">Change To</span>
+                      <p>{vote.description}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center justify-end gap-2">
-                  <div className="flex flex-col items-center">
-                    <button
-                      onClick={() =>
-                        castVote.mutate({
-                          vote: true,
-                          publicId: vote.publicId,
-                        })
-                      }
-                      className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
-                    >
-                      Yes
-                    </button>
-                    <span>({vote.yes})</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <button
-                      onClick={() =>
-                        castVote.mutate({
-                          vote: false,
-                          publicId: vote.publicId,
-                        })
-                      }
-                      className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
-                    >
-                      No
-                    </button>
-                    <span>({vote.no})</span>
-                  </div>
-                </div>
-              </div>
-            ))
+                );
+            })
           ) : (
             <span>No active votes regarding the Flock</span>
           )}
@@ -431,7 +554,7 @@ const Invites = () => {
 const ImageUpdater = ({
   setImageStatus,
 }: {
-  setImageStatus: (value: boolean) => void;
+  setImageStatus: (value: string) => void;
 }) => {
   const utils = trpc.useContext();
 
@@ -447,7 +570,7 @@ const ImageUpdater = ({
       onClientUploadComplete: () => {
         toast.success("Voting Session Created");
         setFiles([]);
-        setImageStatus(false);
+        setImageStatus("");
         utils.flock.getVotes.refetch();
       },
       onUploadError: (e) => {
@@ -472,11 +595,9 @@ const ImageUpdater = ({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute left-0 top-full mt-4 w-72 space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4"
+      className="absolute left-0 top-full z-50 mt-4 w-72 space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4"
     >
-      <span className="block whitespace-nowrap text-center">
-        Suggest a New Image
-      </span>
+      <h1 className="text-center text-3xl font-bold">Update Image</h1>
       <div className="flex w-full flex-col items-center justify-center gap-2 text-slate-50">
         <div
           className="relative flex h-32 w-full cursor-pointer items-center justify-center rounded-lg bg-slate-700"

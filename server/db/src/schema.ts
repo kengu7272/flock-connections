@@ -96,11 +96,12 @@ export const FlockMemberActions = mysqlTable("flockMemberAction", {
   outstanding: boolean("outstanding").notNull().default(true),
 });
 
-export const FlockImageActions = mysqlTable("flockImageAction", {
+export const FlockDetailsActions = mysqlTable("flockDetailAction", {
   actionId: bigint("actionId", { mode: "number", unsigned: true })
     .references(() => FlockActions.id, { onDelete: "cascade" })
     .primaryKey(),
-  picture: text("picture").default("").notNull(),
+  picture: text("picture"),
+  description: varchar("description", { length: 500 }),
 });
 
 export const FlockMemberVotes = mysqlTable(
