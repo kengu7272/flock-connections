@@ -1,5 +1,5 @@
 import { Google } from "arctic";
-import { Lucia } from "lucia";
+import { Lucia, verifyRequestOrigin } from "lucia";
 
 import "dotenv/config";
 
@@ -37,10 +37,22 @@ export const google = new Google(
 );
 
 // server session
-// don't need to set cookies, middleware before every route
-// already handles that, this is mainly for uploadthing routes currently
 export const getServerSession = async (request: Request) => {
+  if (request.method !== "GET") {
+    const originHeader = request.headers.get("Origin");
+    // NOTE: You may need to use `X-Forwarded-Host` instead
+    const hostHeader = request.headers.get("Host");
+    if (
+      !originHeader ||
+      !hostHeader ||
+      !verifyRequestOrigin(originHeader, [hostHeader])
+    ) {
+      return null;
+    }
+  }
+
   const cookieHeader = request.headers.get("Cookie");
+
   const sessionId = lucia.readSessionCookie(cookieHeader ?? "");
   if (!sessionId) {
     return null;
