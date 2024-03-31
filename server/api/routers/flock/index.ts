@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import {
   FlockActions,
-  FlockImageActions,
+  FlockDetailsActions,
   FlockMemberActions,
   FlockMembers,
   FlockMemberVotes,
@@ -134,7 +134,7 @@ export const flockRouter = router({
       .groupBy(FlockActions.id)
       .orderBy(involving.username);
 
-    const flockImageVotes = await ctx.db
+    const flockDetailsVotes = await ctx.db
       .select({
         yes: sql`(select count(*) from ${FlockMemberVotes} where ${FlockMemberVotes.actionId} = ${FlockActions.id} and ${FlockMemberVotes.vote} = 1)`.mapWith(
           Number,
@@ -143,26 +143,30 @@ export const flockRouter = router({
           Number,
         ),
         publicId: FlockActions.publicId,
-        imageUrl: FlockImageActions.picture,
+        imageUrl: FlockDetailsActions.picture,
+        description: FlockDetailsActions.description,
         creator: Users.username,
       })
       .from(FlockActions)
       .innerJoin(
-        FlockImageActions,
-        eq(FlockImageActions.actionId, FlockActions.id),
+        FlockDetailsActions,
+        eq(FlockDetailsActions.actionId, FlockActions.id),
       )
       .innerJoin(Users, eq(Users.id, FlockActions.creator))
       .where(
         and(
           eq(FlockActions.open, true),
           eq(FlockActions.flockId, ctx.flock.id),
-          eq(FlockActions.type, "UPDATE PICTURE"),
+          or(
+            eq(FlockActions.type, "UPDATE PICTURE"),
+            eq(FlockActions.type, "UPDATE DESCRIPTION"),
+          ),
         ),
       )
       .groupBy(FlockActions.id)
       .orderBy(desc(FlockActions.createdAt));
 
-    return { memberVotes, flockImageVotes };
+    return { memberVotes, flockDetailsVotes };
   }),
   createInvite: protectedProcedure
     .input(MemberInviteSchema)
@@ -426,7 +430,7 @@ export const flockRouter = router({
         no >= majority ||
         yes >= majority ||
         yesAndNo === members.count ||
-        yesAndNo === members.count - 1
+        (yes === no && yesAndNo === members.count - 1)
       ) {
         await ctx.db
           .update(FlockActions)
@@ -436,7 +440,7 @@ export const flockRouter = router({
         // different actions
         if (action.type === "INVITE" || action.type === "KICK") {
           // if vote is a no nothing happens
-          if (no >= majority || yesAndNo === members.count) {
+          if (no >= majority || (yes === no && yesAndNo === members.count)) {
             await ctx.db
               .update(FlockMemberActions)
               .set({ outstanding: false })
@@ -473,24 +477,36 @@ export const flockRouter = router({
             return { consensus: "Yes" };
           }
         } else if (action.type === "UPDATE PICTURE") {
-          if (
-            no >= majority ||
-            (yes === no && yesAndNo === members.count - 1)
-          ) {
-            const [image] = await ctx.db
-              .select({ url: FlockImageActions.picture })
-              .from(FlockImageActions)
-              .where(eq(FlockImageActions.actionId, action.id));
+          const [image] = await ctx.db
+            .select({ url: FlockDetailsActions.picture })
+            .from(FlockDetailsActions)
+            .where(eq(FlockDetailsActions.actionId, action.id));
+          if (!image.url)
+            throw new TRPCError({ code: "BAD_REQUEST", message: "No image" });
+          if (no >= majority || (yes === no && yesAndNo === members.count)) {
             const key = image.url.substring(image.url.indexOf("/f/") + 3); // we don't store the key so construct it
             utapi.deleteFiles(key);
             return { consensus: "No" };
           }
 
-          const [picture] = await ctx.db
-            .select({ url: FlockImageActions.picture })
-            .from(FlockImageActions)
-            .where(eq(FlockImageActions.actionId, action.id));
-          await ctx.db.update(Flocks).set({ picture: picture.url });
+          await ctx.db.update(Flocks).set({ picture: image.url });
+          return { consensus: "Yes" };
+        } else if (action.type === "UPDATE DESCRIPTION") {
+          const [{ description }] = await ctx.db
+            .select({ description: FlockDetailsActions.description })
+            .from(FlockDetailsActions)
+            .where(eq(FlockDetailsActions.actionId, action.id));
+          if (!description)
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "No description",
+            });
+
+          if (no >= majority || (yes === no && yesAndNo === members.count)) {
+            return { consensus: "No" };
+          }
+
+          await ctx.db.update(Flocks).set({ description: description });
           return { consensus: "Yes" };
         }
       }
@@ -514,4 +530,38 @@ export const flockRouter = router({
         ),
       );
   }),
+  createUpdateDescription: protectedProcedure
+    .input(FlockSchema.pick({ description: true }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.flock) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+      const [previousSession] = await ctx.db
+        .select()
+        .from(FlockActions)
+        .where(
+          and(
+            eq(FlockActions.creator, ctx.user.id),
+            eq(FlockActions.open, true),
+            eq(FlockActions.type, "UPDATE DESCRIPTION"),
+          ),
+        );
+      if (previousSession)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "You already created a session",
+        });
+
+      const [{ insertId }] = await ctx.db.insert(FlockActions).values({
+        type: "UPDATE DESCRIPTION",
+        creator: ctx.user.id,
+        flockId: ctx.flock.id,
+        publicId: nanoid(16),
+      });
+      await ctx.db
+        .insert(FlockDetailsActions)
+        .values({ description: input.description, actionId: insertId });
+      await ctx.db
+        .insert(FlockMemberVotes)
+        .values({ actionId: insertId, vote: true, userId: ctx.user.id });
+    }),
 });
