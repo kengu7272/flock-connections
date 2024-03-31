@@ -18,3 +18,6 @@ The Group Social Media App
 - run "pnpm i"
 - run "pnpm dev"
 - You now have a beautiful dev server running
+
+- run "docker compose up" (with docker engine running ofc)
+- Your MySQL database is now running
