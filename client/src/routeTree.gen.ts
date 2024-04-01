@@ -10,6 +10,7 @@ import { Route as AuthImport } from './routes/_auth'
 import { Route as AuthProfileIndexImport } from './routes/_auth/profile/index'
 import { Route as AuthFlockIndexImport } from './routes/_auth/flock/index'
 import { Route as AuthFlockFlockIdIndexImport } from './routes/_auth/flock/$flockId/index'
+import { Route as AuthFlockFlockIdCreateIndexImport } from './routes/_auth/flock/$flockId/create/index'
 
 // Create Virtual Routes
 
@@ -73,6 +74,16 @@ const AuthFlockFlockIdIndexRoute = AuthFlockFlockIdIndexImport.update({
   import('./routes/_auth/flock/$flockId/index.lazy').then((d) => d.Route),
 )
 
+const AuthFlockFlockIdCreateIndexRoute =
+  AuthFlockFlockIdCreateIndexImport.update({
+    path: '/flock/$flockId/create/',
+    getParentRoute: () => AuthRoute,
+  } as any).lazy(() =>
+    import('./routes/_auth/flock/$flockId/create/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -109,6 +120,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthFlockFlockIdIndexImport
       parentRoute: typeof AuthImport
     }
+    '/_auth/flock/$flockId/create/': {
+      preLoaderRoute: typeof AuthFlockFlockIdCreateIndexImport
+      parentRoute: typeof AuthImport
+    }
   }
 }
 
@@ -120,6 +135,7 @@ export const routeTree = rootRoute.addChildren([
     AuthProfileIndexRoute,
     AuthHomeIndexLazyRoute,
     AuthFlockFlockIdIndexRoute,
+    AuthFlockFlockIdCreateIndexRoute,
   ]),
   NotLoggedInRoute.addChildren([
     NotLoggedInIndexLazyRoute,

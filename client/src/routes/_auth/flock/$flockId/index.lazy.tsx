@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { useDropzone } from "@uploadthing/react/hooks";
 import clsx from "clsx";
 import { Check, FolderUp, Loader2, Menu, X, XCircle } from "lucide-react";
@@ -56,6 +56,10 @@ function Flock() {
       name: "Invites",
       component: <Invites />,
     },
+    {
+      name: "Posts",
+      component: <Posts flock={flockId} />,
+    }
   ];
 
   const [update, setUpdate] = useState("");
@@ -253,7 +257,7 @@ const Members = ({ name }: { name: string }) => {
         <input
           type="submit"
           value="Invite User"
-          className="ml-auto block rounded-lg bg-sky-500 px-2 py-3 hover:bg-sky-600 active:bg-sky-700"
+          className="ml-auto font-semibold block rounded-lg bg-sky-500 px-2 py-3 hover:bg-sky-600 active:bg-sky-700"
         />
       </form>
       <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
@@ -659,3 +663,13 @@ const ImageUpdater = ({
     </div>
   );
 };
+
+function Posts({ flock }: { flock: string }) {
+  return (
+    <div className="mx-auto w-full space-y-2">
+      <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
+        <Link className="mx-auto block rounded-lg bg-sky-500 text-xl px-8 font-semibold text-center py-4 hover:bg-sky-600 active:bg-sky-700" to={"/flock/" + flock + "/create"}>Create Post</Link> 
+      </div>
+    </div>
+  )
+}
