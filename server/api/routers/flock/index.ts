@@ -146,6 +146,7 @@ export const flockRouter = router({
         imageUrl: FlockDetailsActions.picture,
         description: FlockDetailsActions.description,
         creator: Users.username,
+        type: FlockActions.type,
       })
       .from(FlockActions)
       .innerJoin(
@@ -160,6 +161,7 @@ export const flockRouter = router({
           or(
             eq(FlockActions.type, "UPDATE PICTURE"),
             eq(FlockActions.type, "UPDATE DESCRIPTION"),
+            eq(FlockActions.type, "CREATE POST"),
           ),
         ),
       )

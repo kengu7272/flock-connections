@@ -91,16 +91,15 @@ export const uploadRouter = {
     }),
   flockPostCreation: f({
     image: {
-      maxFileCount: 5,
-    },
-    video: {
-      maxFileCount: 1,
+      maxFileCount: 6,
     },
   })
     .input(PostCreationSchema)
     .middleware(async ({ req, input }) => {
       const user = await getServerSession(req);
       if (!user?.userInfo.flock) throw new UploadThingError("No user found");
+
+      console.log(input.description);
 
       const [{ insertId: actionInsertId }] = await db
         .insert(FlockActions)
@@ -110,13 +109,11 @@ export const uploadRouter = {
           creator: user.userInfo.user.id,
           publicId: nanoid(16),
         });
-      await db
-        .insert(FlockMemberVotes)
-        .values({
-          vote: true,
-          userId: user.userInfo.user.id,
-          actionId: actionInsertId,
-        });
+      await db.insert(FlockMemberVotes).values({
+        vote: true,
+        userId: user.userInfo.user.id,
+        actionId: actionInsertId,
+      });
       await db
         .insert(FlockDetailsActions)
         .values({ actionId: actionInsertId, description: input.description });
@@ -128,9 +125,10 @@ export const uploadRouter = {
         .select()
         .from(FlockDetailsActions)
         .where(eq(FlockDetailsActions.actionId, metadata.actionInsertId));
-      action.picture = action.picture
+      action.picture = action?.picture
         ? [...action.picture, file.url]
         : [file.url];
+      await db.update(FlockDetailsActions).set({ picture: action.picture }).where(eq(FlockDetailsActions.actionId, metadata.actionInsertId ));
     }),
 } satisfies FileRouter;
 

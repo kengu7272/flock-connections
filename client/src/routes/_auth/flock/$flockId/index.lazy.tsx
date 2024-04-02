@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDropzone } from "@uploadthing/react/hooks";
 import clsx from "clsx";
 import { Check, FolderUp, Loader2, Menu, X, XCircle } from "lucide-react";
@@ -59,7 +59,7 @@ function Flock() {
     {
       name: "Posts",
       component: <Posts flock={flockId} />,
-    }
+    },
   ];
 
   const [update, setUpdate] = useState("");
@@ -257,7 +257,7 @@ const Members = ({ name }: { name: string }) => {
         <input
           type="submit"
           value="Invite User"
-          className="ml-auto font-semibold block rounded-lg bg-sky-500 px-2 py-3 hover:bg-sky-600 active:bg-sky-700"
+          className="ml-auto block rounded-lg bg-sky-500 px-2 py-3 font-semibold hover:bg-sky-600 active:bg-sky-700"
         />
       </form>
       <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
@@ -415,7 +415,8 @@ const Voting = () => {
         <div className="space-y-2 overflow-y-auto rounded-lg bg-slate-600 p-2">
           {votes.data?.flockDetailsVotes.length ? (
             votes.data.flockDetailsVotes.map((vote) => {
-              if (vote.imageUrl)
+              if (vote.type === "UPDATE PICTURE") {
+                const [imageUrl] = vote.imageUrl!;
                 return (
                   <div
                     key={vote.publicId}
@@ -428,7 +429,7 @@ const Voting = () => {
                       </div>
                       <img
                         className="mx-auto h-24 w-24 rounded-full transition-transform hover:scale-110"
-                        src={vote.imageUrl}
+                        src={imageUrl}
                       />
                       <div className="mx-auto text-center">
                         <span className="block font-semibold">Creator</span>
@@ -467,7 +468,7 @@ const Voting = () => {
                     </div>
                   </div>
                 );
-              else if (vote.description)
+              } else if (vote.type === "UPDATE DESCRIPTION")
                 return (
                   <div
                     key={vote.publicId}
@@ -519,6 +520,56 @@ const Voting = () => {
                     </div>
                   </div>
                 );
+              else if (vote.type === "CREATE POST") {
+                return (
+                  <div
+                    key={vote.publicId}
+                    className="flex flex-col items-center gap-4 rounded-lg bg-slate-700 px-2 py-4"
+                  >
+                    <div className="flex w-full flex-col items-center gap-4 lg:flex-row lg:justify-center lg:gap-0">
+                      <div className="mx-auto text-center">
+                        <span className="block font-semibold">Action</span>
+                        <span>Create Post</span>
+                      </div>
+                      <div className="mx-auto text-center">
+                        <span className="block font-semibold">Creator</span>
+                        <span>{vote.creator}</span>
+                      </div>
+                    </div>
+                    <ImageDisplay images={vote.imageUrl!} />
+                    <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-col items-center">
+                        <button
+                          onClick={() =>
+                            castVote.mutate({
+                              vote: true,
+                              publicId: vote.publicId,
+                            })
+                          }
+                          className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                        >
+                          Yes
+                        </button>
+                        <span>({vote.yes})</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <button
+                          onClick={() =>
+                            castVote.mutate({
+                              vote: false,
+                              publicId: vote.publicId,
+                            })
+                          }
+                          className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                        >
+                          No
+                        </button>
+                        <span>({vote.no})</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
             })
           ) : (
             <span>No active votes regarding the Flock</span>
@@ -668,8 +719,23 @@ function Posts({ flock }: { flock: string }) {
   return (
     <div className="mx-auto w-full space-y-2">
       <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
-        <Link className="mx-auto block rounded-lg bg-sky-500 text-xl px-8 font-semibold text-center py-4 hover:bg-sky-600 active:bg-sky-700" to={"/flock/" + flock + "/create"}>Create Post</Link> 
+        <Link
+          className="mx-auto block rounded-lg bg-sky-500 px-8 py-4 text-center text-xl font-semibold hover:bg-sky-600 active:bg-sky-700"
+          to={"/flock/" + flock + "/create"}
+        >
+          Create Post
+        </Link>
       </div>
+    </div>
+  );
+}
+
+function ImageDisplay({ images }: { images: string[] }) {
+  const [current, setCurrent] = useState(0);
+
+  return (
+    <div className="h-80 w-full">
+      <img src={images[current]} />
     </div>
   )
 }
