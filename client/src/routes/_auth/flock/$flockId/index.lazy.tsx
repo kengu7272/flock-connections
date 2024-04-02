@@ -3,7 +3,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDropzone } from "@uploadthing/react/hooks";
 import clsx from "clsx";
-import { Check, FolderUp, Loader2, Menu, X, XCircle } from "lucide-react";
+import {
+  ArrowLeftCircle,
+  ArrowRightCircle,
+  Check,
+  FolderUp,
+  Loader2,
+  Menu,
+  X,
+  XCircle,
+} from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { generateClientDropzoneAccept } from "uploadthing/client";
@@ -536,7 +545,10 @@ const Voting = () => {
                         <span>{vote.creator}</span>
                       </div>
                     </div>
-                    <ImageDisplay images={vote.imageUrl!} />
+                    <PostDisplay
+                      images={vote.imageUrl!}
+                      description={vote.description ?? ""}
+                    />
                     <div className="flex items-center justify-end gap-2">
                       <div className="flex flex-col items-center">
                         <button
@@ -730,12 +742,27 @@ function Posts({ flock }: { flock: string }) {
   );
 }
 
-function ImageDisplay({ images }: { images: string[] }) {
+function PostDisplay({
+  images,
+  description,
+}: {
+  images: string[];
+  description: string;
+}) {
   const [current, setCurrent] = useState(0);
 
   return (
-    <div className="h-80 w-full">
-      <img src={images[current]} />
+    <div className="w-full max-h-[600px] space-y-3 text-sm">
+      <div className="relative h-[480px]">
+        <img className="rounded-lg h-full object-cover mx-auto" src={images[current]} />
+        <button className="absolute left-3 top-1/2 hover:text-white active:text-gray-200" onClick={() => setCurrent((prev) => Math.max(0, prev - 1))}>
+          <ArrowLeftCircle />
+        </button>
+        <button className="absolute right-3 top-1/2 hover:text-white active:text-gray-200" onClick={() => setCurrent((prev) => Math.min(images.length - 1, prev + 1))}>
+          <ArrowRightCircle />
+        </button>
+      </div>
+      <p className="px-2 max-h-28 overflow-y-auto">{description}</p>
     </div>
-  )
+  );
 }
