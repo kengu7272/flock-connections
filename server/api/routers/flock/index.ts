@@ -11,10 +11,12 @@ import {
   FlockMembers,
   FlockMemberVotes,
   Flocks,
+  Posts,
   Users,
 } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 import { utapi } from "~/server/uploadthing";
+import { getKey } from "~/server/utils/parsing";
 import { FlockSchema, MemberInviteSchema } from "~/server/validation";
 
 export const flockRouter = router({
@@ -487,7 +489,7 @@ export const flockRouter = router({
           if (!url.length)
             throw new TRPCError({ code: "BAD_REQUEST", message: "No image" });
           if (no >= majority || (yes === no && yesAndNo === members.count)) {
-            const key = url.substring(url.indexOf("/f/") + 3); // we don't store the key so construct it
+            const key = getKey(url); // we don't store the key so construct it
             utapi.deleteFiles(key);
             return { consensus: "No" };
           }
@@ -511,6 +513,34 @@ export const flockRouter = router({
 
           await ctx.db.update(Flocks).set({ description: description });
           return { consensus: "Yes" };
+        } else if (action.type === "CREATE POST") {
+          const [{ description, pictures }] = await ctx.db
+            .select({
+              description: FlockDetailsActions.description,
+              pictures: FlockDetailsActions.picture,
+            })
+            .from(FlockDetailsActions)
+            .where(eq(FlockDetailsActions.actionId, action.id));
+          if (!pictures?.length)
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "No Pictures",
+            });
+          if (no >= majority || (yes === no && yesAndNo === members.count)) {
+            const keys = pictures.map((picture) => getKey(picture));
+            utapi.deleteFiles(keys);
+            return { consensus: "No" };
+          }
+
+          await ctx.db
+            .insert(Posts)
+            .values({
+              flockId: action.flockId,
+              picture: pictures,
+              description: description,
+              publicId: nanoid(16),
+            });
+          return { consensus: "Yes" }
         }
       }
     }),
