@@ -19,7 +19,7 @@ export default function Sidebar() {
   const linkOnClick = () => setMobileLinks(false);
 
   return (
-    <div>
+    <div className="z-50">
       <div
         className={clsx({
           "fixed z-10 flex flex-col items-center justify-center gap-16 whitespace-nowrap px-4 py-6 lg:h-screen lg:w-72 lg:bg-slate-800":

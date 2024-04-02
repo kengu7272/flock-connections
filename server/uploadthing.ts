@@ -15,6 +15,7 @@ import {
   FlockMemberVotes,
   Users,
 } from "./db/src/schema";
+import { PostCreationSchema } from "./validation";
 
 export const utapi = new UTApi();
 
@@ -86,7 +87,50 @@ export const uploadRouter = {
     .onUploadComplete(async ({ file, metadata }) => {
       await db
         .insert(FlockDetailsActions)
-        .values({ actionId: metadata.actionId, picture: file.url });
+        .values({ actionId: metadata.actionId, picture: [file.url] });
+    }),
+  flockPostCreation: f({
+    image: {
+      maxFileCount: 5,
+    },
+    video: {
+      maxFileCount: 1,
+    },
+  })
+    .input(PostCreationSchema)
+    .middleware(async ({ req, input }) => {
+      const user = await getServerSession(req);
+      if (!user?.userInfo.flock) throw new UploadThingError("No user found");
+
+      const [{ insertId: actionInsertId }] = await db
+        .insert(FlockActions)
+        .values({
+          flockId: user.userInfo.flock.id,
+          type: "CREATE POST",
+          creator: user.userInfo.user.id,
+          publicId: nanoid(16),
+        });
+      await db
+        .insert(FlockMemberVotes)
+        .values({
+          vote: true,
+          userId: user.userInfo.user.id,
+          actionId: actionInsertId,
+        });
+      await db
+        .insert(FlockDetailsActions)
+        .values({ actionId: actionInsertId, description: input.description });
+
+      return { actionInsertId };
+    })
+    .onUploadComplete(async ({ file, metadata }) => {
+      const [action] = await db
+        .select()
+        .from(FlockDetailsActions)
+        .where(eq(FlockDetailsActions.actionId, metadata.actionInsertId));
+      action.picture = action.picture
+        ? [...action.picture, file.url]
+        : [file.url];
     }),
 } satisfies FileRouter;
 

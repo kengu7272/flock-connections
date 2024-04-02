@@ -230,7 +230,7 @@ function Uploader({
           </div>
         )}
       </div>
-      <div className="flex w-fit flex-col justify-end gap-2">
+      <div className="flex w-fit justify-end gap-2">
         {!!files.length && !isUploading && (
           <button
             className="flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium"
