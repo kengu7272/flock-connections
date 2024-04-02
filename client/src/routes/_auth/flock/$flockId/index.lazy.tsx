@@ -548,6 +548,7 @@ const Voting = () => {
                     <PostDisplay
                       images={vote.imageUrl!}
                       description={vote.description ?? ""}
+                      flock=""
                     />
                     <div className="flex items-center justify-end gap-2">
                       <div className="flex flex-col items-center">
@@ -750,6 +751,7 @@ function PostDisplay({
   description: string;
 }) {
   const [current, setCurrent] = useState(0);
+  const { flockId } = Route.useParams();
 
   return (
     <div className="w-full max-h-[600px] space-y-3 text-sm">
@@ -762,7 +764,10 @@ function PostDisplay({
           <ArrowRightCircle />
         </button>
       </div>
-      <p className="px-2 max-h-28 overflow-y-auto">{description}</p>
+      <div className="px-2 max-h-28 overflow-y-auto">
+        <span className="font-semibold">{flockId}</span>
+        <p>{description}</p>
+      </div>
     </div>
   );
 }
