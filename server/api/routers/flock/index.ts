@@ -75,10 +75,6 @@ export const flockRouter = router({
         .where(eq(Flocks.name, input.name))
         .orderBy(Users.username);
 
-      // check if user is in the group
-      if (!members.some((member) => member.user.username === ctx.user.username))
-        throw new TRPCError({ code: "UNAUTHORIZED" });
-
       return members;
     }),
   getInfo: protectedProcedure
@@ -545,8 +541,6 @@ export const flockRouter = router({
       }
     }),
   getOutstandingInvites: protectedProcedure.query(async ({ ctx }) => {
-    if (!ctx.flock) throw new TRPCError({ code: "UNAUTHORIZED" });
-
     return await ctx.db
       .select({ user: Users.username, picture: Users.picture })
       .from(FlockActions)
@@ -559,7 +553,7 @@ export const flockRouter = router({
         and(
           eq(FlockActions.type, "INVITE"),
           eq(FlockMemberActions.outstanding, true),
-          eq(FlockActions.flockId, ctx.flock.id),
+          eq(FlockActions.flockId, ctx.flock?.id ?? -1),
         ),
       );
   }),
