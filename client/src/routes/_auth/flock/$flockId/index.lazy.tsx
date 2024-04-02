@@ -548,7 +548,6 @@ const Voting = () => {
                     <PostDisplay
                       images={vote.imageUrl!}
                       description={vote.description ?? ""}
-                      flock=""
                     />
                     <div className="flex items-center justify-end gap-2">
                       <div className="flex flex-col items-center">
