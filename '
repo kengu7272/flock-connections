@@ -55,11 +55,11 @@ function Flock() {
   let sections = [
     {
       name: "Posts",
-      component: <Posts />,
+      component: <Posts isMember={flockMember} flock={flockId} />,
     },
     {
       name: "Members",
-      component: <Members />,
+      component: <Members name={flockId} />,
     },
   ];
 
@@ -199,10 +199,9 @@ function Flock() {
   );
 }
 
-const Members = () => {
-  const { flockId: name } = Route.useParams();
+const Members = ({ name }: { name: string }) => {
   const [selectedUser, setSelectedUser] = useState("");
-  const { members, user, flockMember } = Route.useLoaderData();
+  const { members, user } = Route.useLoaderData();
 
   const membersList = trpc.flock.getMembers.useQuery(
     { name },
@@ -252,31 +251,29 @@ const Members = () => {
 
   return (
     <div className="mx-auto w-full space-y-2">
-      {flockMember && (
-        <form
-          className="flex items-center gap-2 rounded-lg bg-slate-600 p-2"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <div className="flex w-full flex-col">
-            <input
-              placeholder="Username"
-              autoComplete="off"
-              className="flex-grow rounded-lg bg-slate-600 p-2 text-white focus:bg-slate-700 focus:outline-none"
-              {...register("username")}
-            />
-            {errors.username && (
-              <span className="block text-sm text-red-500">
-                {errors.username.message}
-              </span>
-            )}
-          </div>
+      <form
+        className="flex items-center gap-2 rounded-lg bg-slate-600 p-2"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        <div className="flex w-full flex-col">
           <input
-            type="submit"
-            value="Invite User"
-            className="ml-auto block rounded-lg bg-sky-500 px-2 py-3 font-semibold hover:bg-sky-600 active:bg-sky-700"
+            placeholder="Username"
+            autoComplete="off"
+            className="flex-grow rounded-lg bg-slate-600 p-2 text-white focus:bg-slate-700 focus:outline-none"
+            {...register("username")}
           />
-        </form>
-      )}
+          {errors.username && (
+            <span className="block text-sm text-red-500">
+              {errors.username.message}
+            </span>
+          )}
+        </div>
+        <input
+          type="submit"
+          value="Invite User"
+          className="ml-auto block rounded-lg bg-sky-500 px-2 py-3 font-semibold hover:bg-sky-600 active:bg-sky-700"
+        />
+      </form>
       <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
         {membersList.data.map((member) => (
           <div
@@ -288,19 +285,17 @@ const Members = () => {
               username={member.user.username}
             />
             <div className="relative ml-auto flex items-center">
-              {flockMember && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedUser((prev) =>
-                      prev === member.user.username ? "" : member.user.username,
-                    );
-                  }}
-                  className="hover:text-slate-100 active:text-slate-200"
-                >
-                  <Menu />
-                </button>
-              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedUser((prev) =>
+                    prev === member.user.username ? "" : member.user.username,
+                  );
+                }}
+                className="hover:text-slate-100 active:text-slate-200"
+              >
+                <Menu />
+              </button>
               {selectedUser === member.user.username && (
                 <div className="absolute right-0 top-full z-50 min-w-24 whitespace-nowrap rounded-lg border border-slate-600 bg-slate-700 py-1">
                   {selectedUser !== user.username ? (
@@ -737,13 +732,11 @@ const ImageUpdater = ({
   );
 };
 
-function Posts() {
-  const { flockMember } = Route.useLoaderData();
-  const { flockId: flock } = Route.useParams();
+function Posts({ flock, isMember }: { flock: string; isMember: boolean }) {
   return (
     <div className="mx-auto w-full space-y-2">
       <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
-        {flockMember && (
+        {isMember && (
           <Link
             className="mx-auto block rounded-lg bg-sky-500 px-8 py-4 text-center text-xl font-semibold hover:bg-sky-600 active:bg-sky-700"
             to={"/flock/" + flock + "/create"}
