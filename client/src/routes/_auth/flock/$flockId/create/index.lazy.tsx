@@ -120,7 +120,7 @@ function Create() {
                         ? `${files.length} File${files.length > 1 ? "s" : ""}`
                         : "Upload Content"}
                     </span>
-                    {!files.length && <span>Max 5 Images + 1 Video</span>}
+                    {!files.length && <span>Max 6 Images</span>}
                     {!files.length && <span>(4 MB)</span>}
                   </div>
                 </div>
