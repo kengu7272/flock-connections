@@ -481,15 +481,16 @@ export const flockRouter = router({
             .select({ url: FlockDetailsActions.picture })
             .from(FlockDetailsActions)
             .where(eq(FlockDetailsActions.actionId, action.id));
-          if (!image.url)
+          const [url] = image.url ?? [];
+          if (!url.length)
             throw new TRPCError({ code: "BAD_REQUEST", message: "No image" });
           if (no >= majority || (yes === no && yesAndNo === members.count)) {
-            const key = image.url.substring(image.url.indexOf("/f/") + 3); // we don't store the key so construct it
+            const key = url.substring(url.indexOf("/f/") + 3); // we don't store the key so construct it
             utapi.deleteFiles(key);
             return { consensus: "No" };
           }
 
-          await ctx.db.update(Flocks).set({ picture: image.url });
+          await ctx.db.update(Flocks).set({ picture: url });
           return { consensus: "Yes" };
         } else if (action.type === "UPDATE DESCRIPTION") {
           const [{ description }] = await ctx.db
