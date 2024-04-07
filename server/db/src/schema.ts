@@ -110,6 +110,7 @@ export const FlockMemberVotes = mysqlTable(
   "flockMemberVote",
   {
     id: serial("id").primaryKey(),
+    publicId: varchar("publicId", { length: 16 }).unique().notNull(),
     actionId: bigint("actionId", { mode: "number", unsigned: true })
       .notNull()
       .references(() => FlockActions.id, { onDelete: "cascade" }),
@@ -139,5 +140,20 @@ export const Posts = mysqlTable("post", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const PostLikes = mysqlTable(
+  "postLike",
+  {
+    id: serial("id").primaryKey(),
+    publicId: varchar("publicId", { length: 16 }).unique().notNull(),
+    postId: bigint("postId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => Posts.id, { onDelete: "cascade" }),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => Users.id, { onDelete: "cascade" }),
+  },
+  (table) => ({ unq: unique().on(table.postId, table.userId) }),
+);
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);
