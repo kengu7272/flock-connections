@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_auth/flock/$flockId/")({
       user,
       outstandingInvites,
       flockMember: userFlock?.flock.name === flockId,
-      posts
+      posts,
     };
   },
 });

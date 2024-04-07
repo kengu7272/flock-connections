@@ -39,7 +39,7 @@ export default function Sidebar() {
         </button>
         <div
           className={clsx({
-            "absolute top-12 hidden flex-col gap-2 items-center lg:flex": true,
+            "absolute top-12 hidden flex-col items-center gap-2 lg:flex": true,
             "!flex": mobileLinks,
           })}
         >
@@ -47,7 +47,10 @@ export default function Sidebar() {
             Flock Connections
           </Link>
           <div className="flex items-center gap-2">
-            <img src={loggedInData?.picture} className="h-8 w-8 rounded-full object-cover" />
+            <img
+              src={loggedInData?.picture}
+              className="h-8 w-8 rounded-full object-cover"
+            />
             <span className="text-lg font-semibold text-slate-300">
               {loggedInData?.username}
             </span>

@@ -49,9 +49,12 @@ export default function Navbar() {
         <div className="absolute right-3 flex items-center whitespace-nowrap lg:right-12">
           <button
             onClick={() => setProfileMenu((prev) => !prev)}
-            className="hover:text-slate-100 space-x-2"
+            className="space-x-2 hover:text-slate-100"
           >
-            <img className="h-10 w-10 rounded-full inline-block object-cover" src={loggedInData.picture} />
+            <img
+              className="inline-block h-10 w-10 rounded-full object-cover"
+              src={loggedInData.picture}
+            />
           </button>
           {profileMenu && (
             <div className="absolute right-0 top-full mt-2 w-full min-w-32 rounded-lg bg-slate-700 py-1">

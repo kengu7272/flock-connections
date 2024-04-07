@@ -8,7 +8,7 @@ export const appRouter = router({
   base: baseRouter,
   user: userRouter,
   flock: flockRouter,
-  post: postRouter
+  post: postRouter,
 });
 
 export type AppRouter = typeof appRouter;

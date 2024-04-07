@@ -797,10 +797,10 @@ function PostDisplay({
   });
 
   return (
-    <div className="max-h-[600px] w-full space-y-3 rounded-lg bg-slate-700 py-4 text-sm">
+    <div className="max-h-[600px] w-full space-y-3 rounded-lg bg-slate-700 py-2 text-sm">
       <div>
         {date && (
-          <span className="mx-auto block w-fit font-semibold">
+          <span className="mx-auto my-2 block w-fit font-semibold">
             {DateTime.fromJSDate(date).toLocaleString()}
           </span>
         )}
