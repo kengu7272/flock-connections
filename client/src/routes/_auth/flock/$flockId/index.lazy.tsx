@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDropzone } from "@uploadthing/react/hooks";
 import clsx from "clsx";
+import { DateTime } from "luxon";
 import {
   ArrowLeftCircle,
   ArrowRightCircle,
@@ -738,7 +739,7 @@ const ImageUpdater = ({
 };
 
 function Posts() {
-  const { flockMember } = Route.useLoaderData();
+  const { flockMember, posts } = Route.useLoaderData();
   const { flockId: flock } = Route.useParams();
   return (
     <div className="mx-auto w-full space-y-2">
@@ -751,6 +752,9 @@ function Posts() {
             Create Post
           </Link>
         )}
+        {posts.map((post) => (
+          <PostDisplay date={post.createdAt} images={post.picture} description={post.description} key={post.publicId} />
+        ))}
       </div>
     </div>
   );
@@ -759,28 +763,31 @@ function Posts() {
 function PostDisplay({
   images,
   description,
+  date
 }: {
   images: string[];
-  description: string;
+  description: string | null;
+  date: Date
 }) {
   const [current, setCurrent] = useState(0);
   const { flockId } = Route.useParams();
 
   return (
-    <div className="max-h-[600px] w-full space-y-3 text-sm">
+    <div className="max-h-[600px] w-full space-y-3 text-sm bg-slate-700 px-2 py-4 rounded-lg">
       <div className="relative h-[480px]">
+        <span className="font-semibold py-1 mx-auto w-fit block">{DateTime.fromJSDate(date).toLocaleString()}</span>
         <img
-          className="mx-auto h-full rounded-lg object-cover"
+          className="mx-auto h-full rounded-lg object-cover w-full"
           src={images[current]}
         />
         <button
-          className="absolute left-3 top-1/2 hover:text-white active:text-gray-200"
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 hover:text-white active:text-gray-200"
           onClick={() => setCurrent((prev) => Math.max(0, prev - 1))}
         >
           <ArrowLeftCircle />
         </button>
         <button
-          className="absolute right-3 top-1/2 hover:text-white active:text-gray-200"
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 hover:text-white active:text-gray-200"
           onClick={() =>
             setCurrent((prev) => Math.min(images.length - 1, prev + 1))
           }
