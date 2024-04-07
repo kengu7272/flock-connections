@@ -132,7 +132,12 @@ export const Posts = mysqlTable("post", {
     .references(() => Flocks.id, { onDelete: "cascade" }),
   picture: json("picture").$type<string[]>().notNull(),
   description: varchar("description", { length: 500 }),
-  likes: bigint("likes", { unsigned: true, mode: "number" }).default(0).notNull(),
+  likes: bigint("likes", { unsigned: true, mode: "number" })
+    .default(0)
+    .notNull(),
+  createdAt: datetime("createdAt", { mode: "date" })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);

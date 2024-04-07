@@ -528,15 +528,13 @@ export const flockRouter = router({
             return { consensus: "No" };
           }
 
-          await ctx.db
-            .insert(Posts)
-            .values({
-              flockId: action.flockId,
-              picture: pictures,
-              description: description,
-              publicId: nanoid(16),
-            });
-          return { consensus: "Yes" }
+          await ctx.db.insert(Posts).values({
+            flockId: action.flockId,
+            picture: pictures,
+            description: description,
+            publicId: nanoid(16),
+          });
+          return { consensus: "Yes" };
         }
       }
     }),
@@ -590,5 +588,21 @@ export const flockRouter = router({
       await ctx.db
         .insert(FlockMemberVotes)
         .values({ actionId: insertId, vote: true, userId: ctx.user.id });
+    }),
+  getPosts: protectedProcedure
+    .input(z.object({ name: z.string() }))
+    .query(async ({ input, ctx }) => {
+      return await ctx.db
+        .select({
+          picture: Posts.picture,
+          description: Posts.description,
+          likes: Posts.likes,
+          publicId: Posts.publicId,
+          createdAt: Posts.createdAt
+        })
+        .from(Posts)
+        .innerJoin(Flocks, eq(Flocks.id, Posts.flockId))
+        .where(eq(Flocks.name, input.name))
+        .orderBy(desc(Posts.createdAt));
     }),
 });
