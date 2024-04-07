@@ -7,6 +7,7 @@ export const baseRouter = router({
     return {
       loggedIn: true,
       username: ctx.user.username,
+      picture: ctx.user.picture,
     };
   }),
 });
