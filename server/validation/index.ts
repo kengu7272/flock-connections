@@ -45,5 +45,5 @@ export type MemberInviteSchemaType = z.infer<typeof MemberInviteSchema>;
 
 export const PostCreationSchema = z.object({
   description: z.string().max(500),
-})
+});
 export type PostCreationSchemaType = z.infer<typeof PostCreationSchema>;

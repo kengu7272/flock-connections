@@ -78,9 +78,12 @@ export const uploadRouter = {
         creator: user.userInfo.user.id,
         publicId: nanoid(16),
       });
-      await db
-        .insert(FlockMemberVotes)
-        .values({ actionId, vote: true, userId: user.userInfo.user.id });
+      await db.insert(FlockMemberVotes).values({
+        actionId,
+        vote: true,
+        userId: user.userInfo.user.id,
+        publicId: nanoid(16),
+      });
 
       return { flockId: user.userInfo.flock.id, actionId };
     })
@@ -113,6 +116,7 @@ export const uploadRouter = {
         vote: true,
         userId: user.userInfo.user.id,
         actionId: actionInsertId,
+        publicId: nanoid(16),
       });
       await db
         .insert(FlockDetailsActions)
@@ -128,7 +132,10 @@ export const uploadRouter = {
       action.picture = action?.picture
         ? [...action.picture, file.url]
         : [file.url];
-      await db.update(FlockDetailsActions).set({ picture: action.picture }).where(eq(FlockDetailsActions.actionId, metadata.actionInsertId ));
+      await db
+        .update(FlockDetailsActions)
+        .set({ picture: action.picture })
+        .where(eq(FlockDetailsActions.actionId, metadata.actionInsertId));
     }),
 } satisfies FileRouter;
 

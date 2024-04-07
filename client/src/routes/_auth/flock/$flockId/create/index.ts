@@ -9,4 +9,3 @@ export const Route = createFileRoute("/_auth/flock/$flockId/create/")({
       throw redirect({ to: "/home", replace: true });
   },
 });
-

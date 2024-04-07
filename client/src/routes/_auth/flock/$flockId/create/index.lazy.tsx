@@ -34,7 +34,7 @@ function Create() {
       onClientUploadComplete: () => {
         toast.success("Post Creation Session Created");
         setFiles([]);
-        navigate({ to: "/flock/" + flockId})
+        navigate({ to: "/flock/" + flockId });
       },
       onUploadError: (e) => {
         toast.error(e.message);
@@ -156,4 +156,3 @@ function Create() {
     </div>
   );
 }
-

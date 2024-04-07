@@ -249,6 +249,7 @@ export const flockRouter = router({
         .insert(FlockMemberActions)
         .values({ actionId: insertId, userId: user.id });
       await ctx.db.insert(FlockMemberVotes).values({
+        publicId: nanoid(16),
         userId: ctx.user.id,
         vote: true,
         actionId: insertId,
@@ -327,6 +328,7 @@ export const flockRouter = router({
         userId: user.id,
       });
       await ctx.db.insert(FlockMemberVotes).values({
+        publicId: nanoid(16),
         userId: ctx.user.id,
         vote: true,
         actionId: insertId,
@@ -407,6 +409,7 @@ export const flockRouter = router({
           );
       } else
         await ctx.db.insert(FlockMemberVotes).values({
+          publicId: nanoid(16),
           actionId: action.id,
           vote: input.vote,
           userId: ctx.user.id,
@@ -587,7 +590,12 @@ export const flockRouter = router({
         .values({ description: input.description, actionId: insertId });
       await ctx.db
         .insert(FlockMemberVotes)
-        .values({ actionId: insertId, vote: true, userId: ctx.user.id });
+        .values({
+          actionId: insertId,
+          vote: true,
+          userId: ctx.user.id,
+          publicId: nanoid(16),
+        });
     }),
   getPosts: protectedProcedure
     .input(z.object({ name: z.string() }))
@@ -598,7 +606,7 @@ export const flockRouter = router({
           description: Posts.description,
           likes: Posts.likes,
           publicId: Posts.publicId,
-          createdAt: Posts.createdAt
+          createdAt: Posts.createdAt,
         })
         .from(Posts)
         .innerJoin(Flocks, eq(Flocks.id, Posts.flockId))
