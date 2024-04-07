@@ -110,7 +110,7 @@ function Flock() {
 
   return (
     <div className="w-full py-24">
-      <main className="items-center-center mx-auto flex w-[95%] flex-col space-y-4 rounded-lg bg-slate-700 px-4 py-6 lg:w-3/5 xl:w-2/5">
+      <main className="items-center-center mx-auto flex w-[95%] flex-col space-y-4 rounded-lg bg-slate-700 px-1 py-6 lg:w-3/5 lg:px-4 xl:w-2/5">
         <div className="flex items-center gap-3">
           <div className="relative">
             <img
@@ -743,7 +743,7 @@ function Posts() {
   const { flockId: flock } = Route.useParams();
   return (
     <div className="mx-auto w-full space-y-2">
-      <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-4 py-2">
+      <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-1 py-2 lg:px-4">
         {flockMember && (
           <Link
             className="mx-auto block rounded-lg bg-sky-500 px-8 py-4 text-center text-xl font-semibold hover:bg-sky-600 active:bg-sky-700"
@@ -779,34 +779,36 @@ function PostDisplay({
 
   return (
     <div className="max-h-[600px] w-full space-y-3 rounded-lg bg-slate-700 px-2 py-4 text-sm">
-      <div className="relative h-[480px]">
+      <div>
         <span className="mx-auto block w-fit py-1 font-semibold">
           {DateTime.fromJSDate(date).toLocaleString()}
         </span>
-        <img
-          className="mx-auto h-full w-full rounded-lg object-cover"
-          src={images[current]}
-        />
-        {images.length > 1 && (
-          <>
-            <button
-              className="absolute left-3 top-1/2 -translate-y-1/2 transform hover:text-white active:text-gray-200 disabled:opacity-50"
-              onClick={() => setCurrent((prev) => Math.max(0, prev - 1))}
-              disabled={current === 0}
-            >
-              <ArrowLeftCircle />
-            </button>
-            <button
-              className="absolute right-3 top-1/2 -translate-y-1/2 transform hover:text-white active:text-gray-200 disabled:opacity-50"
-              disabled={current === images.length - 1}
-              onClick={() =>
-                setCurrent((prev) => Math.min(images.length - 1, prev + 1))
-              }
-            >
-              <ArrowRightCircle />
-            </button>
-          </>
-        )}
+        <div className="relative">
+          <img
+            className="mx-auto h-96 rounded-lg object-contain"
+            src={images[current]}
+          />
+          {images.length > 1 && (
+            <>
+              <button
+                className="absolute left-3 top-1/2 -translate-y-1/2 transform hover:text-white active:text-gray-200 disabled:opacity-50"
+                onClick={() => setCurrent((prev) => Math.max(0, prev - 1))}
+                disabled={current === 0}
+              >
+                <ArrowLeftCircle />
+              </button>
+              <button
+                className="absolute right-3 top-1/2 -translate-y-1/2 transform hover:text-white active:text-gray-200 disabled:opacity-50"
+                disabled={current === images.length - 1}
+                onClick={() =>
+                  setCurrent((prev) => Math.min(images.length - 1, prev + 1))
+                }
+              >
+                <ArrowRightCircle />
+              </button>
+            </>
+          )}
+        </div>
       </div>
       <div className="max-h-28 overflow-y-auto px-2">
         <span className="font-semibold">{flockId}</span>
