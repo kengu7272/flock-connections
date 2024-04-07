@@ -8,6 +8,7 @@ import {
   ArrowRightCircle,
   Check,
   FolderUp,
+  Heart,
   Loader2,
   Menu,
   X,
@@ -49,7 +50,7 @@ function Flock() {
   if (!sectionParam)
     navigate({
       to: "/flock" + "/" + flockId,
-      search: { section: "Members" },
+      search: { section: "Posts" },
       replace: true,
     });
 
@@ -739,8 +740,12 @@ const ImageUpdater = ({
 };
 
 function Posts() {
-  const { flockMember, posts } = Route.useLoaderData();
+  const { flockMember, posts: initialPosts } = Route.useLoaderData();
   const { flockId: flock } = Route.useParams();
+  const { data: posts } = trpc.flock.getPosts.useQuery(
+    { name: flock },
+    { initialData: initialPosts },
+  );
   return (
     <div className="mx-auto w-full space-y-2">
       <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-1 py-2 lg:px-4">
@@ -758,6 +763,8 @@ function Posts() {
             images={post.picture}
             description={post.description}
             key={post.publicId}
+            likes={post.likes}
+            publicId={post.publicId}
           />
         ))}
       </div>
@@ -769,23 +776,37 @@ function PostDisplay({
   images,
   description,
   date,
+  likes,
+  publicId,
 }: {
   images: string[];
   description: string | null;
-  date: Date;
+  date?: Date;
+  likes?: number;
+  publicId?: string;
 }) {
   const [current, setCurrent] = useState(0);
   const { flockId } = Route.useParams();
+  const utils = trpc.useContext();
+  const toggleLike = trpc.post.like.useMutation({
+    onSuccess: (res) => {
+      toast.success("Successfully " + res);
+      utils.flock.getPosts.refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   return (
-    <div className="max-h-[600px] w-full space-y-3 rounded-lg bg-slate-700 px-2 py-4 text-sm">
+    <div className="max-h-[600px] w-full space-y-3 rounded-lg bg-slate-700 py-4 text-sm">
       <div>
-        <span className="mx-auto block w-fit py-1 font-semibold">
-          {DateTime.fromJSDate(date).toLocaleString()}
-        </span>
+        {date && (
+          <span className="mx-auto block w-fit font-semibold">
+            {DateTime.fromJSDate(date).toLocaleString()}
+          </span>
+        )}
         <div className="relative">
           <img
-            className="mx-auto h-96 rounded-lg object-contain"
+            className="mx-auto h-[420px] rounded-lg object-contain"
             src={images[current]}
           />
           {images.length > 1 && (
@@ -811,6 +832,17 @@ function PostDisplay({
         </div>
       </div>
       <div className="max-h-28 overflow-y-auto px-2">
+        {likes !== undefined && !!publicId && (
+          <div className="mb-1 flex items-center gap-1">
+            <button
+              onClick={() => toggleLike.mutate({ postPublicId: publicId })}
+              className="block hover:text-sky-600 active:text-sky-700"
+            >
+              <Heart className="h-6 w-6" />
+            </button>
+            <span className="text-lg font-semibold">{likes}</span>
+          </div>
+        )}
         <span className="font-semibold">{flockId}</span>
         <p>{description}</p>
       </div>
