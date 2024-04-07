@@ -3,7 +3,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDropzone } from "@uploadthing/react/hooks";
 import clsx from "clsx";
-import { DateTime } from "luxon";
 import {
   ArrowLeftCircle,
   ArrowRightCircle,
@@ -14,6 +13,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { DateTime } from "luxon";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { generateClientDropzoneAccept } from "uploadthing/client";
@@ -753,7 +753,12 @@ function Posts() {
           </Link>
         )}
         {posts.map((post) => (
-          <PostDisplay date={post.createdAt} images={post.picture} description={post.description} key={post.publicId} />
+          <PostDisplay
+            date={post.createdAt}
+            images={post.picture}
+            description={post.description}
+            key={post.publicId}
+          />
         ))}
       </div>
     </div>
@@ -763,37 +768,45 @@ function Posts() {
 function PostDisplay({
   images,
   description,
-  date
+  date,
 }: {
   images: string[];
   description: string | null;
-  date: Date
+  date: Date;
 }) {
   const [current, setCurrent] = useState(0);
   const { flockId } = Route.useParams();
 
   return (
-    <div className="max-h-[600px] w-full space-y-3 text-sm bg-slate-700 px-2 py-4 rounded-lg">
+    <div className="max-h-[600px] w-full space-y-3 rounded-lg bg-slate-700 px-2 py-4 text-sm">
       <div className="relative h-[480px]">
-        <span className="font-semibold py-1 mx-auto w-fit block">{DateTime.fromJSDate(date).toLocaleString()}</span>
+        <span className="mx-auto block w-fit py-1 font-semibold">
+          {DateTime.fromJSDate(date).toLocaleString()}
+        </span>
         <img
-          className="mx-auto h-full rounded-lg object-cover w-full"
+          className="mx-auto h-full w-full rounded-lg object-cover"
           src={images[current]}
         />
-        <button
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 hover:text-white active:text-gray-200"
-          onClick={() => setCurrent((prev) => Math.max(0, prev - 1))}
-        >
-          <ArrowLeftCircle />
-        </button>
-        <button
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 hover:text-white active:text-gray-200"
-          onClick={() =>
-            setCurrent((prev) => Math.min(images.length - 1, prev + 1))
-          }
-        >
-          <ArrowRightCircle />
-        </button>
+        {images.length > 1 && (
+          <>
+            <button
+              className="absolute left-3 top-1/2 -translate-y-1/2 transform hover:text-white active:text-gray-200 disabled:opacity-50"
+              onClick={() => setCurrent((prev) => Math.max(0, prev - 1))}
+              disabled={current === 0}
+            >
+              <ArrowLeftCircle />
+            </button>
+            <button
+              className="absolute right-3 top-1/2 -translate-y-1/2 transform hover:text-white active:text-gray-200 disabled:opacity-50"
+              disabled={current === images.length - 1}
+              onClick={() =>
+                setCurrent((prev) => Math.min(images.length - 1, prev + 1))
+              }
+            >
+              <ArrowRightCircle />
+            </button>
+          </>
+        )}
       </div>
       <div className="max-h-28 overflow-y-auto px-2">
         <span className="font-semibold">{flockId}</span>
