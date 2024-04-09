@@ -805,10 +805,16 @@ function PostDisplay({
           </span>
         )}
         <div className="relative">
-          <img
-            className="mx-auto h-[420px] rounded-lg object-contain"
-            src={images[current]}
-          />
+          {images.map(
+            (image, index) =>
+              current === index && (
+                <img
+                  key={image}
+                  className="mx-auto h-[420px] rounded-lg object-contain"
+                  src={images[current]}
+                />
+              ),
+          )}
           {images.length > 1 && (
             <>
               <button
