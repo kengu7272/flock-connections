@@ -12,30 +12,29 @@ import { useUploadThing } from "~/client/src/utils/uploadthing";
 import { trpc } from "~/client/utils/trpc";
 import { ProfileSchema, ProfileSchemaType } from "~/server/validation";
 
-export const Route = createLazyFileRoute("/_auth/profile/")({
+export const Route = createLazyFileRoute("/_auth/profile/$profileId/")({
   component: Profile,
 });
 
 function Profile() {
-  const { userInfo: initialUserInfo, flock: initialFlock } =
-    Route.useLoaderData();
+  const { userInfo: initialUserInfo, owner, profileId } = Route.useLoaderData();
 
-  const userInfo = trpc.user.userInfo.useQuery(undefined, {
-    initialData: initialUserInfo,
-  });
-  const flock = trpc.user.getFlock.useQuery(undefined, {
-    initialData: initialFlock,
-  });
-  const utils = trpc.useContext();
-
-  const [profilePicture, setProfilePicture] = useState(
-    userInfo.data?.picture ?? "",
+  const {
+    data: { userInfo },
+    refetch: refetchUser,
+  } = trpc.base.userInfo?.useQuery(
+    { username: profileId },
+    {
+      initialData: initialUserInfo,
+    },
   );
+
+  const utils = trpc.useContext();
 
   const updateProfile = trpc.user.updateProfile.useMutation({
     onSuccess: () => {
-      userInfo.refetch();
-      utils.base.loggedIn.invalidate();
+      refetchUser();
+      utils.base.loggedIn.refetch();
       toast.success("Updated Profile Successfully");
     },
     onError: (e) => {
@@ -66,7 +65,7 @@ function Profile() {
   const removeBio = trpc.user.clearBio.useMutation({
     onSuccess: () => {
       toast.success("Bio Removed");
-      userInfo.refetch();
+      refetchUser();
     },
     onError: (e) => toast.error(e.message),
   });
@@ -83,7 +82,7 @@ function Profile() {
           <div className="flex w-full flex-col items-center gap-4 px-2 lg:px-20">
             <img
               onClick={() => setSelectPicture((prev) => !prev)}
-              src={profilePicture}
+              src={userInfo?.user.picture}
               className="h-16 w-16 rounded-full transition-transform duration-200 hover:scale-110"
               alt="Profile Picture"
             />
@@ -92,79 +91,81 @@ function Profile() {
                 <span className="font-semibold">
                   Upload a new Profile Picture
                 </span>
-                <Uploader setProfilePicture={setProfilePicture} />
+                <Uploader />
               </div>
             )}
           </div>
           <span className="text-lg font-semibold">
-            {userInfo.data?.username}
+            {userInfo?.user.username}
           </span>
-          {flock.data && (
-            <span className="font-semibold">{flock.data.flock.name}</span>
+          {userInfo?.flock && (
+            <span className="font-semibold">{userInfo?.flock.name}</span>
           )}
-          <span className="text-sm">{userInfo.data?.email}</span>
+          <span className="text-sm">{userInfo?.user.email}</span>
           <span className="text-sm">
-            Joined {userInfo.data?.joined.toDateString()}
+            Joined {userInfo?.user.joined.toDateString()}
           </span>
           <p className="w-3/4 text-center text-sm text-slate-300">
-            {userInfo.data?.bio}
+            {userInfo?.user.bio}
           </p>
         </div>
-        <form
-          className="mx-auto w-[90%] space-y-4"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <div className="flex flex-col gap-2">
-            <label>Username</label>
+        {owner && (
+          <form
+            className="mx-auto w-[90%] space-y-4"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <div className="flex flex-col gap-2">
+              <label>Username</label>
+              <input
+                className="h-12 flex-grow rounded-lg bg-slate-800 p-2 text-white focus:outline-none"
+                placeholder={userInfo?.user.username}
+                {...register("username")}
+              />
+              {errors.username && (
+                <span className="text-sm text-red-500">
+                  {errors.username.message}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <label>Bio</label>
+              <textarea
+                className="h-12 min-h-24 flex-grow rounded-lg bg-slate-800 p-2 text-white focus:outline-none"
+                placeholder={userInfo?.user.bio ?? ""}
+                {...register("bio")}
+              />
+              {errors.bio && (
+                <span className="text-sm text-red-500">
+                  {errors.bio.message}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  removeBio.mutate();
+                }}
+                className="mx-auto w-fit rounded-lg bg-red-600 px-3 py-2 text-sm hover:bg-red-700 active:bg-red-800"
+              >
+                Remove Bio
+              </button>
+            </div>
             <input
-              className="h-12 flex-grow rounded-lg bg-slate-800 p-2 text-white focus:outline-none"
-              placeholder={userInfo.data?.username}
-              {...register("username")}
+              type="submit"
+              value="Update"
+              className="ml-auto block h-12 rounded-lg bg-sky-600 px-3 py-2 text-white hover:bg-sky-700 active:bg-sky-800 disabled:opacity-75"
             />
-            {errors.username && (
-              <span className="text-sm text-red-500">
-                {errors.username.message}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <label>Bio</label>
-            <textarea
-              className="h-12 min-h-24 flex-grow rounded-lg bg-slate-800 p-2 text-white focus:outline-none"
-              placeholder={userInfo.data?.bio ?? ""}
-              {...register("bio")}
-            />
-            {errors.bio && (
-              <span className="text-sm text-red-500">{errors.bio.message}</span>
-            )}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                removeBio.mutate();
-              }}
-              className="mx-auto w-fit rounded-lg bg-red-600 px-3 py-2 text-sm hover:bg-red-700 active:bg-red-800"
-            >
-              Remove Bio
-            </button>
-          </div>
-          <input
-            type="submit"
-            value="Update"
-            className="ml-auto block h-12 rounded-lg bg-sky-600 px-3 py-2 text-white hover:bg-sky-700 active:bg-sky-800 disabled:opacity-75"
-          />
-        </form>
+          </form>
+        )}
         <div />
       </main>
     </div>
   );
 }
 
-function Uploader({
-  setProfilePicture,
-}: {
-  setProfilePicture: React.Dispatch<React.SetStateAction<string>>;
-}) {
+function Uploader() {
+  const utils = trpc.useContext();
+
   const [files, setFiles] = useState<File[]>([]);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
@@ -174,9 +175,9 @@ function Uploader({
   const { startUpload, permittedFileInfo, isUploading } = useUploadThing(
     "profileImage",
     {
-      onClientUploadComplete: (res) => {
+      onClientUploadComplete: () => {
         toast.success("Profile Picture Updated");
-        setProfilePicture(res[0].serverData.imageUrl);
+        utils.base.userInfo.refetch();
       },
       onUploadError: (e) => {
         toast.error(e.message);
