@@ -7,6 +7,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as NotLoggedInImport } from './routes/_notLoggedIn'
 import { Route as AuthImport } from './routes/_auth'
+import { Route as AuthHomeIndexImport } from './routes/_auth/home/index'
 import { Route as AuthFlockIndexImport } from './routes/_auth/flock/index'
 import { Route as AuthProfileProfileIdIndexImport } from './routes/_auth/profile/$profileId/index'
 import { Route as AuthFlockFlockIdIndexImport } from './routes/_auth/flock/$flockId/index'
@@ -18,7 +19,6 @@ const NotLoggedInIndexLazyImport = createFileRoute('/_notLoggedIn/')()
 const NotLoggedInLoginIndexLazyImport = createFileRoute(
   '/_notLoggedIn/login/',
 )()
-const AuthHomeIndexLazyImport = createFileRoute('/_auth/home/')()
 
 // Create/Update Routes
 
@@ -46,7 +46,7 @@ const NotLoggedInLoginIndexLazyRoute = NotLoggedInLoginIndexLazyImport.update({
   import('./routes/_notLoggedIn/login/index.lazy').then((d) => d.Route),
 )
 
-const AuthHomeIndexLazyRoute = AuthHomeIndexLazyImport.update({
+const AuthHomeIndexRoute = AuthHomeIndexImport.update({
   path: '/home/',
   getParentRoute: () => AuthRoute,
 } as any).lazy(() =>
@@ -105,7 +105,7 @@ declare module '@tanstack/react-router' {
       parentRoute: typeof AuthImport
     }
     '/_auth/home/': {
-      preLoaderRoute: typeof AuthHomeIndexLazyImport
+      preLoaderRoute: typeof AuthHomeIndexImport
       parentRoute: typeof AuthImport
     }
     '/_notLoggedIn/login/': {
@@ -132,7 +132,7 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   AuthRoute.addChildren([
     AuthFlockIndexRoute,
-    AuthHomeIndexLazyRoute,
+    AuthHomeIndexRoute,
     AuthFlockFlockIdIndexRoute,
     AuthProfileProfileIdIndexRoute,
     AuthFlockFlockIdCreateIndexRoute,

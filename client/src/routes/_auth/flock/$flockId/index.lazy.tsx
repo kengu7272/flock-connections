@@ -4,17 +4,15 @@ import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDropzone } from "@uploadthing/react/hooks";
 import clsx from "clsx";
 import {
-  ArrowLeftCircle,
+    ArrowLeftCircle,
   ArrowRightCircle,
   Check,
   FolderUp,
-  Heart,
   Loader2,
   Menu,
   X,
   XCircle,
 } from "lucide-react";
-import { DateTime } from "luxon";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { generateClientDropzoneAccept } from "uploadthing/client";
@@ -29,6 +27,7 @@ import {
   MemberInviteSchema,
   MemberInviteSchemaType,
 } from "~/server/validation";
+import PostDisplay from "~/client/src/components/PostDisplay";
 
 export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
   component: Flock,
@@ -354,6 +353,7 @@ const Members = () => {
 
 const Voting = () => {
   const votes = trpc.flock.getVotes.useQuery();
+  const { flockId } = Route.useParams();
   const utils = trpc.useContext();
 
   const castVote = trpc.flock.vote.useMutation({
@@ -557,9 +557,10 @@ const Voting = () => {
                         <span>{vote.creator}</span>
                       </div>
                     </div>
-                    <PostDisplay
+                    <PostVote
                       images={vote.imageUrl!}
                       description={vote.description ?? ""}
+                      flockId={flockId}
                     />
                     <div className="flex items-center justify-end gap-2">
                       <div className="flex flex-col items-center">
@@ -765,6 +766,7 @@ function Posts() {
             key={post.publicId}
             likes={post.likes}
             publicId={post.publicId}
+            flockId={flock}
           />
         ))}
       </div>
@@ -772,38 +774,20 @@ function Posts() {
   );
 }
 
-function PostDisplay({
+function PostVote({
   images,
   description,
-  date,
-  likes,
-  publicId,
+  flockId,
 }: {
   images: string[];
   description: string | null;
-  date?: Date;
-  likes?: number;
-  publicId?: string;
+  flockId: string
 }) {
   const [current, setCurrent] = useState(0);
-  const { flockId } = Route.useParams();
-  const utils = trpc.useContext();
-  const toggleLike = trpc.post.like.useMutation({
-    onSuccess: (res) => {
-      toast.success("Successfully " + res);
-      utils.flock.getPosts.refetch();
-    },
-    onError: (e) => toast.error(e.message),
-  });
 
   return (
     <div className="max-h-[600px] w-full space-y-3 rounded-lg bg-slate-700 py-2 text-sm">
       <div>
-        {date && (
-          <span className="mx-auto my-2 block w-fit font-semibold">
-            {DateTime.fromJSDate(date).toLocaleString()}
-          </span>
-        )}
         <div className="relative">
           {images.map(
             (image, index) =>
@@ -838,20 +822,10 @@ function PostDisplay({
         </div>
       </div>
       <div className="max-h-28 overflow-y-auto px-2">
-        {likes !== undefined && !!publicId && (
-          <div className="mb-1 flex items-center gap-1">
-            <button
-              onClick={() => toggleLike.mutate({ postPublicId: publicId })}
-              className="block hover:text-sky-600 active:text-sky-700"
-            >
-              <Heart className="h-6 w-6" />
-            </button>
-            <span className="text-lg font-semibold">{likes}</span>
-          </div>
-        )}
         <span className="font-semibold">{flockId}</span>
         <p>{description}</p>
       </div>
     </div>
   );
 }
+
