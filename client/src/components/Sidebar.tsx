@@ -11,7 +11,7 @@ export default function Sidebar() {
 
   const [mobileLinks, setMobileLinks] = useState(false);
   const linkClass = clsx({
-    "rounded-lg py-3 text-center hover:bg-slate-700 lg:flex items-center justify-center gap-2 border border-slate-600 hidden":
+    "rounded-lg py-3 text-center hover:bg-slate-700 lg:flex items-center justify-center gap-2 border border-slate-600 hidden transition-colors":
       true,
     "!flex": mobileLinks,
   });
@@ -74,14 +74,14 @@ export default function Sidebar() {
               <span>Flock</span>
             </Link>
           )}
-          <Link onClick={linkOnClick} className={linkClass} to="/profile">
+          <Link onClick={linkOnClick} className={linkClass} to={"/profile/" + loggedInData?.username ?? ""}>
             <User />
             <span>Profile</span>
           </Link>
           <a
             onClick={linkOnClick}
             href="/api/logout"
-            className={linkClass + " hover:!bg-red-700"}
+            className={linkClass + " hover:!bg-red-700 transition-colors"}
           >
             <LogOut />
             <span>Log Out</span>
