@@ -50,7 +50,7 @@ function Home() {
   return (
     <div
       onClick={() => setSelectedInvite("")}
-      className="flex w-full justify-center py-24"
+      className="flex w-full justify-center py-16"
     >
       <main className="items-center-center mx-auto flex w-[95%] flex-col rounded-lg px-1 py-6 lg:w-3/5 lg:px-4 xl:w-2/5">
         {!invites.isLoading && !!invites.data?.length && (
@@ -133,6 +133,7 @@ function Home() {
                       likes={post.post.likes}
                       publicId={post.post.publicId}
                       flockId={post.flock.name}
+                      userLiked={!!post.userLiked}
                     />
                   </div>
                 )),
