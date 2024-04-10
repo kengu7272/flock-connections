@@ -1,6 +1,7 @@
 import {
   FlockMembers,
   Flocks,
+  Posts,
   ProviderAccounts,
   Sessions,
   Users,
@@ -11,3 +12,4 @@ export type ProviderAccount = typeof ProviderAccounts.$inferSelect;
 export type Session = typeof Sessions.$inferSelect;
 export type Flock = typeof Flocks.$inferSelect;
 export type FlockMember = typeof FlockMembers.$inferSelect;
+export type Post = typeof Posts.$inferSelect;
