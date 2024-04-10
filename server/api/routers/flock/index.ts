@@ -11,6 +11,7 @@ import {
   FlockMembers,
   FlockMemberVotes,
   Flocks,
+  PostLikes,
   Posts,
   Users,
 } from "~/server/db/src/schema";
@@ -614,16 +615,24 @@ export const flockRouter = router({
           likes: Posts.likes,
           publicId: Posts.publicId,
           createdAt: Posts.createdAt,
+          userLiked: PostLikes.userId,
         })
         .from(Posts)
         .innerJoin(Flocks, eq(Flocks.id, Posts.flockId))
+        .leftJoin(
+          PostLikes,
+          and(
+            eq(PostLikes.postId, Posts.id),
+            eq(PostLikes.userId, ctx.user.id),
+          ),
+        )
         .where(
           and(
             eq(Flocks.name, input.name),
             cursor ? lte(Posts.id, cursor) : undefined,
           ),
         )
-        .orderBy(desc(Posts.createdAt))
+        .orderBy(desc(Posts.id))
         .limit(8);
 
       let nextCursor = undefined;

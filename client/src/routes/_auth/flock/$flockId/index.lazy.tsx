@@ -749,7 +749,7 @@ function Posts() {
     { name: flock },
     { getNextPageParam: (prev) => prev.nextCursor },
   );
-  const { ref, isInViewport: lastPostVisible} = useOnScreen();
+  const { ref, isInViewport: lastPostVisible } = useOnScreen();
   if (lastPostVisible && posts.hasNextPage && !posts.isLoading)
     posts.fetchNextPage();
 
@@ -771,7 +771,10 @@ function Posts() {
                 page.posts.map((post, postIndex) => (
                   <div
                     key={post.publicId}
-                    {...(pageIndex === posts.data.pages.length - 1 && postIndex === page.posts.length - 1 ? { ref } : {})}
+                    {...(pageIndex === posts.data.pages.length - 1 &&
+                    postIndex === page.posts.length - 1
+                      ? { ref }
+                      : {})}
                   >
                     <PostDisplay
                       date={post.createdAt}

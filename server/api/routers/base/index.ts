@@ -1,7 +1,13 @@
 import { and, desc, eq, lte, ne } from "drizzle-orm";
 import { z } from "zod";
 
-import { FlockMembers, Flocks, Posts, Users } from "~/server/db/src/schema";
+import {
+  FlockMembers,
+  Flocks,
+  PostLikes,
+  Posts,
+  Users,
+} from "~/server/db/src/schema";
 import { protectedProcedure, publicProcedure, router } from "~/server/trpc";
 
 export const baseRouter = router({
@@ -60,9 +66,17 @@ export const baseRouter = router({
             name: Flocks.name,
             picture: Flocks.picture,
           },
+          userLiked: PostLikes.userId,
         })
         .from(Posts)
         .innerJoin(Flocks, eq(Flocks.id, Posts.flockId))
+        .leftJoin(
+          PostLikes,
+          and(
+            eq(PostLikes.postId, Posts.id),
+            eq(PostLikes.userId, ctx.user.id),
+          ),
+        )
         .where(
           and(
             ne(Posts.flockId, ctx.flock?.id ?? -1),

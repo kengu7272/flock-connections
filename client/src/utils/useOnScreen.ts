@@ -18,8 +18,7 @@ export default function useInViewport() {
       observer.observe(refElement);
 
       return () => {
-        if(observer)
-          observer.disconnect();
+        if (observer) observer.disconnect();
       };
     }
   }, [refElement]);

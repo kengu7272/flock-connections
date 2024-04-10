@@ -1,4 +1,5 @@
 import { useState } from "react";
+import clsx from "clsx";
 import { ArrowLeftCircle, ArrowRightCircle, Heart } from "lucide-react";
 import { DateTime } from "luxon";
 import { toast } from "react-toastify";
@@ -12,6 +13,7 @@ export default function PostDisplay({
   likes,
   publicId,
   flockId,
+  userLiked,
 }: {
   images: string[];
   description: string | null;
@@ -19,15 +21,18 @@ export default function PostDisplay({
   likes: number;
   publicId: string;
   flockId: string;
+  userLiked?: boolean;
 }) {
   const [current, setCurrent] = useState(0);
   const [postLikes, setPostLikes] = useState(likes);
+  const [heartColor, setHeartColor] = useState(userLiked);
   const toggleLike = trpc.post.like.useMutation({
     onSuccess: (res) => {
       toast.success("Successfully " + res);
       res === "Liked"
         ? setPostLikes((prev) => prev + 1)
         : setPostLikes((prev) => prev - 1);
+      userLiked !== undefined && setHeartColor((prev) => !prev);
     },
     onError: (e) => toast.error(e.message),
   });
@@ -80,7 +85,12 @@ export default function PostDisplay({
               onClick={() => toggleLike.mutate({ postPublicId: publicId })}
               className="block hover:text-sky-600 active:text-sky-700"
             >
-              <Heart className="h-5 w-5" />
+              <Heart
+                className={clsx({
+                  "h-5 w-5": true,
+                  "text-sky-700": heartColor && userLiked !== undefined,
+                })}
+              />
             </button>
             <span className="text-lg font-semibold">{postLikes}</span>
           </div>
