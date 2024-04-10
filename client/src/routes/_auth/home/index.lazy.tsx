@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Check, Menu, X } from "lucide-react";
 import { toast } from "react-toastify";
 
 import PostDisplay from "~/client/src/components/PostDisplay";
+import useOnScreen from "~/client/src/utils/useOnScreen";
 import { trpc } from "~/client/utils/trpc";
 
 export const Route = createLazyFileRoute("/_auth/home/")({
@@ -41,6 +42,10 @@ function Home() {
     {},
     { getNextPageParam: (lastPage) => lastPage.nextCursor },
   );
+
+  const lastPost = useRef(null);
+  const lastPostVisible = useOnScreen(lastPost);
+  if (lastPostVisible && posts.hasNextPage && !posts.isLoading) posts.fetchNextPage();
 
   return (
     <div
@@ -108,21 +113,33 @@ function Home() {
             </Link>
           </div>
         )}
-        {!!posts.data?.pages[0].posts[0] && <div className="p-2 rounded-lg bg-slate-800 space-y-2">
-          {posts.data?.pages.map((page) =>
-            page.posts.map((post) => (
-              <PostDisplay
-                key={post.post.publicId}
-                publicId={post.post.publicId}
-                date={post.post.createdAt}
-                images={post.post.picture}
-                flockId={post.flock.name}
-                likes={post.post.likes}
-                description={post.post.description}
-              />
-            )),
-          )}
-        </div>}
+        {!!posts.data?.pages[0].posts[0] && (
+          <div className="space-y-2 rounded-lg bg-slate-800 p-2">
+            {!posts.isLoading && posts.data?.pages.map((page, pageIndex) =>
+              page.posts.map((post, postIndex) => (
+                <div
+                  key={post.post.publicId}
+                  ref={
+                    pageIndex === posts.data?.pages.length - 1 &&
+                    postIndex === page.posts.length - 1
+                      ? lastPost
+                      : null
+                  }
+                >
+                  <PostDisplay
+                    publicId={post.post.publicId}
+                    date={post.post.createdAt}
+                    images={post.post.picture}
+                    flockId={post.flock.name}
+                    likes={post.post.likes}
+                    description={post.post.description}
+                  />
+                </div>
+              )),
+            )}
+          </div>
+        )}
+        {posts.isLoading && <span className="w-full block text-center">Loading...</span>}
       </main>
     </div>
   );
