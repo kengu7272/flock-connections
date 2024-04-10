@@ -74,14 +74,18 @@ export default function Sidebar() {
               <span>Flock</span>
             </Link>
           )}
-          <Link onClick={linkOnClick} className={linkClass} to={"/profile/" + loggedInData?.username ?? ""}>
+          <Link
+            onClick={linkOnClick}
+            className={linkClass}
+            to={"/profile/" + loggedInData?.username ?? ""}
+          >
             <User />
             <span>Profile</span>
           </Link>
           <a
             onClick={linkOnClick}
             href="/api/logout"
-            className={linkClass + " hover:!bg-red-700 transition-colors"}
+            className={linkClass + " transition-colors hover:!bg-red-700"}
           >
             <LogOut />
             <span>Log Out</span>

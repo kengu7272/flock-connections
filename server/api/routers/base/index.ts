@@ -72,11 +72,11 @@ export const baseRouter = router({
         .orderBy(desc(Posts.id))
         .limit(8);
 
-        let nextCursor = undefined;
-        if(posts.length > 7) {
-          const nextItem = posts.pop();
-          nextCursor = nextItem!.post.id
-        }
+      let nextCursor = undefined;
+      if (posts.length > 7) {
+        const nextItem = posts.pop();
+        nextCursor = nextItem!.post.id;
+      }
 
       return { posts, nextCursor };
     }),

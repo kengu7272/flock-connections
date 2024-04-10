@@ -143,7 +143,11 @@ export const uploadRouter = {
       });
       await db
         .insert(FlockDetailsActions)
-        .values({ actionId: actionInsertId, description: input.description, picture: [] });
+        .values({
+          actionId: actionInsertId,
+          description: input.description,
+          picture: [],
+        });
 
       let postInsertId = null;
       if (members.count === 1) {

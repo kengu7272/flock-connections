@@ -22,7 +22,7 @@ function Profile() {
   const {
     data: { userInfo },
     refetch: refetchUser,
-  } = trpc.base.userInfo?.useQuery(
+  } = trpc.base.userInfo.useQuery(
     { username: profileId },
     {
       initialData: initialUserInfo,
