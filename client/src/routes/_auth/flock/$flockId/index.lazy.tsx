@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDropzone } from "@uploadthing/react/hooks";
@@ -749,8 +749,7 @@ function Posts() {
     { name: flock },
     { getNextPageParam: (prev) => prev.nextCursor },
   );
-  const lastPost = useRef(null);
-  const lastPostVisible = useOnScreen(lastPost);
+  const { ref, isInViewport: lastPostVisible} = useOnScreen();
   if (lastPostVisible && posts.hasNextPage && !posts.isLoading)
     posts.fetchNextPage();
 
@@ -772,12 +771,7 @@ function Posts() {
                 page.posts.map((post, postIndex) => (
                   <div
                     key={post.publicId}
-                    ref={
-                      pageIndex === posts.data?.pages.length - 1 &&
-                      postIndex === page.posts.length - 1
-                        ? lastPost
-                        : null
-                    }
+                    {...(pageIndex === posts.data.pages.length - 1 && postIndex === page.posts.length - 1 ? { ref } : {})}
                   >
                     <PostDisplay
                       date={post.createdAt}

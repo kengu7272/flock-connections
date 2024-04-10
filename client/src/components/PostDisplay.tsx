@@ -33,7 +33,7 @@ export default function PostDisplay({
   });
 
   return (
-    <div className="max-h-[600px] w-full space-y-3 rounded-lg bg-slate-700 py-2 text-sm">
+    <div className="w-full space-y-3 rounded-lg bg-slate-700 py-2 text-sm">
       <div>
         {date && (
           <span className="mx-auto my-2 block w-fit font-semibold">
@@ -73,7 +73,7 @@ export default function PostDisplay({
           )}
         </div>
       </div>
-      <div className="max-h-28 overflow-y-auto px-2">
+      <div className="px-2">
         {likes !== undefined && !!publicId && (
           <div className="mb-1 flex items-center gap-1">
             <button
