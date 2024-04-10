@@ -202,18 +202,6 @@ export const flockRouter = router({
           message: "User already in a Flock",
         });
 
-      // if only one member voting doesn't need to happen
-      const [members] = await ctx.db
-        .select({ count: count(FlockMembers.userId) })
-        .from(FlockMembers)
-        .where(eq(FlockMembers.flockId, ctx.flock.id));
-      if (members.count === 1) {
-        await ctx.db
-          .insert(FlockMembers)
-          .values({ flockId: ctx.flock.id, userId: user.id });
-        return;
-      }
-
       // check if an invite is already active
       const [invite] = await ctx.db
         .select()
@@ -240,11 +228,18 @@ export const flockRouter = router({
           message: "Outstanding Vote Session or Invite",
         });
 
+      // if only one member voting doesn't need to happen
+      const [members] = await ctx.db
+        .select({ count: count(FlockMembers.userId) })
+        .from(FlockMembers)
+        .where(eq(FlockMembers.flockId, ctx.flock.id));
+
       const [{ insertId }] = await ctx.db.insert(FlockActions).values({
         flockId: ctx.flock.id,
         type: "INVITE",
         creator: ctx.user.id,
         publicId: nanoid(16),
+        ...(members.count === 1 ? { open: false, accepted: true } : {}),
       });
       await ctx.db
         .insert(FlockMemberActions)
