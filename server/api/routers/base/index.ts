@@ -70,10 +70,10 @@ export const baseRouter = router({
           ),
         )
         .orderBy(desc(Posts.id))
-        .limit(2);
+        .limit(8);
 
         let nextCursor = undefined;
-        if(posts.length > 1) {
+        if(posts.length > 7) {
           const nextItem = posts.pop();
           nextCursor = nextItem!.post.id
         }

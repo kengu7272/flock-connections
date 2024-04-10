@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import {
   createUploadthing,
@@ -12,7 +12,10 @@ import { db } from "./db";
 import {
   FlockActions,
   FlockDetailsActions,
+  FlockMembers,
   FlockMemberVotes,
+  Flocks,
+  Posts,
   Users,
 } from "./db/src/schema";
 import { PostCreationSchema } from "./validation";
@@ -72,11 +75,17 @@ export const uploadRouter = {
       if (outstandingSession)
         throw new UploadThingError("You already created an active session");
 
+      const [members] = await db
+        .select({ count: count(FlockMembers.userId) })
+        .from(FlockMembers)
+        .where(eq(FlockMembers.flockId, user.userInfo.flock.id));
+
       const [{ insertId: actionId }] = await db.insert(FlockActions).values({
         type: "UPDATE PICTURE",
         flockId: user.userInfo.flock.id,
         creator: user.userInfo.user.id,
         publicId: nanoid(16),
+        ...(members.count === 1 ? { open: false, accepted: true } : {}),
       });
       await db.insert(FlockMemberVotes).values({
         actionId,
@@ -85,12 +94,22 @@ export const uploadRouter = {
         publicId: nanoid(16),
       });
 
-      return { flockId: user.userInfo.flock.id, actionId };
+      return {
+        flockId: user.userInfo.flock.id,
+        actionId,
+        members: members.count,
+      };
     })
     .onUploadComplete(async ({ file, metadata }) => {
       await db
         .insert(FlockDetailsActions)
         .values({ actionId: metadata.actionId, picture: [file.url] });
+
+      if (metadata.members === 1)
+        await db
+          .update(Flocks)
+          .set({ picture: file.url })
+          .where(eq(Flocks.id, metadata.flockId));
     }),
   flockPostCreation: f({
     image: {
@@ -102,7 +121,10 @@ export const uploadRouter = {
       const user = await getServerSession(req);
       if (!user?.userInfo.flock) throw new UploadThingError("No user found");
 
-      console.log(input.description);
+      const [members] = await db
+        .select({ count: count(FlockMembers.userId) })
+        .from(FlockMembers)
+        .where(eq(FlockMembers.flockId, user.userInfo.flock.id));
 
       const [{ insertId: actionInsertId }] = await db
         .insert(FlockActions)
@@ -111,6 +133,7 @@ export const uploadRouter = {
           type: "CREATE POST",
           creator: user.userInfo.user.id,
           publicId: nanoid(16),
+          ...(members.count === 1 ? { open: false, accepted: true } : {}),
         });
       await db.insert(FlockMemberVotes).values({
         vote: true,
@@ -120,22 +143,37 @@ export const uploadRouter = {
       });
       await db
         .insert(FlockDetailsActions)
-        .values({ actionId: actionInsertId, description: input.description });
+        .values({ actionId: actionInsertId, description: input.description, picture: [] });
 
-      return { actionInsertId };
+      let postInsertId = null;
+      if (members.count === 1) {
+        const [{ insertId }] = await db.insert(Posts).values({
+          flockId: user.userInfo.flock.id,
+          picture: [],
+          description: input.description,
+          publicId: nanoid(16),
+        });
+
+        postInsertId = insertId;
+      }
+
+      return { actionInsertId, members: members.count, postInsertId };
     })
     .onUploadComplete(async ({ file, metadata }) => {
       const [action] = await db
         .select()
         .from(FlockDetailsActions)
         .where(eq(FlockDetailsActions.actionId, metadata.actionInsertId));
-      action.picture = action?.picture
-        ? [...action.picture, file.url]
-        : [file.url];
       await db
         .update(FlockDetailsActions)
-        .set({ picture: action.picture })
+        .set({ picture: [...action.picture!, file.url] })
         .where(eq(FlockDetailsActions.actionId, metadata.actionInsertId));
+
+      if (metadata.members === 1)
+        await db
+          .update(Posts)
+          .set({ picture: [...action.picture!, file.url] })
+          .where(eq(Posts.id, metadata.postInsertId!));
     }),
 } satisfies FileRouter;
 

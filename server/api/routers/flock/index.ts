@@ -493,7 +493,10 @@ export const flockRouter = router({
             return { consensus: "No" };
           }
 
-          await ctx.db.update(Flocks).set({ picture: url });
+          await ctx.db
+            .update(Flocks)
+            .set({ picture: url })
+            .where(eq(Flocks.id, action.flockId));
           return { consensus: "Yes" };
         } else if (action.type === "UPDATE DESCRIPTION") {
           const [{ description }] = await ctx.db
@@ -510,7 +513,7 @@ export const flockRouter = router({
             return { consensus: "No" };
           }
 
-          await ctx.db.update(Flocks).set({ description: description });
+          await ctx.db.update(Flocks).set({ description: description }).where(eq(Flocks.id, action.flockId));
           return { consensus: "Yes" };
         } else if (action.type === "CREATE POST") {
           const [{ description, pictures }] = await ctx.db
@@ -588,14 +591,12 @@ export const flockRouter = router({
       await ctx.db
         .insert(FlockDetailsActions)
         .values({ description: input.description, actionId: insertId });
-      await ctx.db
-        .insert(FlockMemberVotes)
-        .values({
-          actionId: insertId,
-          vote: true,
-          userId: ctx.user.id,
-          publicId: nanoid(16),
-        });
+      await ctx.db.insert(FlockMemberVotes).values({
+        actionId: insertId,
+        vote: true,
+        userId: ctx.user.id,
+        publicId: nanoid(16),
+      });
     }),
   getPosts: protectedProcedure
     .input(z.object({ name: z.string() }))
