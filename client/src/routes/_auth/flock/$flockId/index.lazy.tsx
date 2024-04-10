@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDropzone } from "@uploadthing/react/hooks";
 import clsx from "clsx";
 import {
-    ArrowLeftCircle,
+  ArrowLeftCircle,
   ArrowRightCircle,
   Check,
   FolderUp,
@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import { generateClientDropzoneAccept } from "uploadthing/client";
 import { z } from "zod";
 
+import PostDisplay from "~/client/src/components/PostDisplay";
 import User from "~/client/src/components/User";
 import { inputClass } from "~/client/src/utils/classes";
 import { useUploadThing } from "~/client/src/utils/uploadthing";
@@ -27,7 +28,7 @@ import {
   MemberInviteSchema,
   MemberInviteSchemaType,
 } from "~/server/validation";
-import PostDisplay from "~/client/src/components/PostDisplay";
+import useOnScreen from "~/client/src/utils/useOnScreen";
 
 export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
   component: Flock,
@@ -741,12 +742,18 @@ const ImageUpdater = ({
 };
 
 function Posts() {
-  const { flockMember, posts: initialPosts } = Route.useLoaderData();
+  const { flockMember } = Route.useLoaderData();
   const { flockId: flock } = Route.useParams();
-  const { data: posts } = trpc.flock.getPosts.useQuery(
+
+  const posts = trpc.flock.getPosts.useInfiniteQuery(
     { name: flock },
-    { initialData: initialPosts },
+    { getNextPageParam: (prev) => prev.nextCursor },
   );
+  const lastPost = useRef(null);
+  const lastPostVisible = useOnScreen(lastPost);
+  if (lastPostVisible && posts.hasNextPage && !posts.isLoading)
+    posts.fetchNextPage();
+
   return (
     <div className="mx-auto w-full space-y-2">
       <div className="max-h-3/4 min-h-72 space-y-2 overflow-y-auto rounded-lg bg-slate-600 px-1 py-2 lg:px-4">
@@ -758,17 +765,37 @@ function Posts() {
             Create Post
           </Link>
         )}
-        {posts.map((post) => (
-          <PostDisplay
-            date={post.createdAt}
-            images={post.picture}
-            description={post.description}
-            key={post.publicId}
-            likes={post.likes}
-            publicId={post.publicId}
-            flockId={flock}
-          />
-        ))}
+        {posts && !!posts.data?.pages[0].posts[0] && (
+          <div className="space-y-2 rounded-lg bg-slate-800 p-2">
+            {!posts.isLoading &&
+              posts.data?.pages.map((page, pageIndex) =>
+                page.posts.map((post, postIndex) => (
+                  <div
+                    key={post.publicId}
+                    ref={
+                      pageIndex === posts.data?.pages.length - 1 &&
+                      postIndex === page.posts.length - 1
+                        ? lastPost
+                        : null
+                    }
+                  >
+                    <PostDisplay
+                      date={post.createdAt}
+                      images={post.picture}
+                      description={post.description}
+                      key={post.publicId}
+                      likes={post.likes}
+                      publicId={post.publicId}
+                      flockId={flock}
+                    />
+                  </div>
+                )),
+              )}
+          </div>
+        )}
+        {posts.isLoading && (
+          <span className="block w-full text-center">Loading...</span>
+        )}
       </div>
     </div>
   );
@@ -781,7 +808,7 @@ function PostVote({
 }: {
   images: string[];
   description: string | null;
-  flockId: string
+  flockId: string;
 }) {
   const [current, setCurrent] = useState(0);
 
@@ -828,4 +855,3 @@ function PostVote({
     </div>
   );
 }
-

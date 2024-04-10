@@ -15,7 +15,6 @@ export const Route = createFileRoute("/_auth/flock/$flockId/")({
     const groupInfo = await client.flock.getInfo.query({ name: flockId });
     const user = await client.user.userInfo.query();
     const outstandingInvites = await client.flock.getOutstandingInvites.query();
-    const posts = await client.flock.getPosts.query({ name: flockId });
 
     return {
       members,
@@ -23,7 +22,6 @@ export const Route = createFileRoute("/_auth/flock/$flockId/")({
       user,
       outstandingInvites,
       flockMember: userFlock?.flock.name === flockId,
-      posts,
     };
   },
 });

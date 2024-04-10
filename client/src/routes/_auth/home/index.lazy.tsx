@@ -45,7 +45,8 @@ function Home() {
 
   const lastPost = useRef(null);
   const lastPostVisible = useOnScreen(lastPost);
-  if (lastPostVisible && posts.hasNextPage && !posts.isLoading) posts.fetchNextPage();
+  if (lastPostVisible && posts.hasNextPage && !posts.isLoading)
+    posts.fetchNextPage();
 
   return (
     <div
@@ -115,31 +116,34 @@ function Home() {
         )}
         {!!posts.data?.pages[0].posts[0] && (
           <div className="space-y-2 rounded-lg bg-slate-800 p-2">
-            {!posts.isLoading && posts.data?.pages.map((page, pageIndex) =>
-              page.posts.map((post, postIndex) => (
-                <div
-                  key={post.post.publicId}
-                  ref={
-                    pageIndex === posts.data?.pages.length - 1 &&
-                    postIndex === page.posts.length - 1
-                      ? lastPost
-                      : null
-                  }
-                >
-                  <PostDisplay
-                    publicId={post.post.publicId}
-                    date={post.post.createdAt}
-                    images={post.post.picture}
-                    flockId={post.flock.name}
-                    likes={post.post.likes}
-                    description={post.post.description}
-                  />
-                </div>
-              )),
-            )}
+            {!posts.isLoading &&
+              posts.data?.pages.map((page, pageIndex) =>
+                page.posts.map((post, postIndex) => (
+                  <div
+                    key={post.post.publicId}
+                    ref={
+                      pageIndex === posts.data?.pages.length - 1 &&
+                      postIndex === page.posts.length - 1
+                        ? lastPost
+                        : null
+                    }
+                  >
+                    <PostDisplay
+                      publicId={post.post.publicId}
+                      date={post.post.createdAt}
+                      images={post.post.picture}
+                      flockId={post.flock.name}
+                      likes={post.post.likes}
+                      description={post.post.description}
+                    />
+                  </div>
+                )),
+              )}
           </div>
         )}
-        {posts.isLoading && <span className="w-full block text-center">Loading...</span>}
+        {posts.isLoading && (
+          <span className="block w-full text-center">Loading...</span>
+        )}
       </main>
     </div>
   );

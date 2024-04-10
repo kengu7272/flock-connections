@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, desc, eq, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, lte, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -513,7 +513,10 @@ export const flockRouter = router({
             return { consensus: "No" };
           }
 
-          await ctx.db.update(Flocks).set({ description: description }).where(eq(Flocks.id, action.flockId));
+          await ctx.db
+            .update(Flocks)
+            .set({ description: description })
+            .where(eq(Flocks.id, action.flockId));
           return { consensus: "Yes" };
         } else if (action.type === "CREATE POST") {
           const [{ description, pictures }] = await ctx.db
@@ -599,10 +602,13 @@ export const flockRouter = router({
       });
     }),
   getPosts: protectedProcedure
-    .input(z.object({ name: z.string() }))
+    .input(z.object({ name: z.string(), cursor: z.number().nullish() }))
     .query(async ({ input, ctx }) => {
-      return await ctx.db
+      const { cursor } = input;
+
+      const posts = await ctx.db
         .select({
+          id: Posts.id,
           picture: Posts.picture,
           description: Posts.description,
           likes: Posts.likes,
@@ -611,7 +617,21 @@ export const flockRouter = router({
         })
         .from(Posts)
         .innerJoin(Flocks, eq(Flocks.id, Posts.flockId))
-        .where(eq(Flocks.name, input.name))
-        .orderBy(desc(Posts.createdAt));
+        .where(
+          and(
+            eq(Flocks.name, input.name),
+            cursor ? lte(Posts.id, cursor) : undefined,
+          ),
+        )
+        .orderBy(desc(Posts.createdAt))
+        .limit(8);
+
+      let nextCursor = undefined;
+      if (posts.length > 7) {
+        const nextItem = posts.pop();
+        nextCursor = nextItem!.id;
+      }
+
+      return { posts, nextCursor };
     }),
 });
