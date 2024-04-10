@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Check, Menu, X } from "lucide-react";
 import { toast } from "react-toastify";
@@ -43,8 +43,7 @@ function Home() {
     { getNextPageParam: (lastPage) => lastPage.nextCursor },
   );
 
-  const lastPost = useRef(null);
-  const lastPostVisible = useOnScreen(lastPost);
+  const { isInViewport: lastPostVisible, ref } = useOnScreen();
   if (lastPostVisible && posts.hasNextPage && !posts.isLoading)
     posts.fetchNextPage();
 
@@ -121,27 +120,26 @@ function Home() {
                 page.posts.map((post, postIndex) => (
                   <div
                     key={post.post.publicId}
-                    ref={
-                      pageIndex === posts.data?.pages.length - 1 &&
-                      postIndex === page.posts.length - 1
-                        ? lastPost
-                        : null
-                    }
+                    {...(pageIndex === posts.data.pages.length - 1 &&
+                    postIndex === page.posts.length - 1
+                      ? { ref }
+                      : {})}
                   >
                     <PostDisplay
-                      publicId={post.post.publicId}
                       date={post.post.createdAt}
                       images={post.post.picture}
-                      flockId={post.flock.name}
-                      likes={post.post.likes}
                       description={post.post.description}
+                      key={post.post.publicId}
+                      likes={post.post.likes}
+                      publicId={post.post.publicId}
+                      flockId={post.flock.name}
                     />
                   </div>
                 )),
               )}
           </div>
         )}
-        {posts.isLoading && (
+        {(posts.isLoading || posts.isFetchingNextPage) && (
           <span className="block w-full text-center">Loading...</span>
         )}
       </main>

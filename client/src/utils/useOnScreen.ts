@@ -1,17 +1,28 @@
-import { RefObject, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-export default function useOnScreen(ref: RefObject<HTMLElement>) {
-  const [isIntersecting, setIntersecting] = useState(false);
+export default function useInViewport() {
+  const [isInViewport, setIsInViewport] = useState(false);
+  const [refElement, setRefElement] = useState<HTMLElement | null>(null);
+
+  const setRef = useCallback((node: HTMLElement | null) => {
+    if (node !== null) {
+      setRefElement(node);
+    }
+  }, []);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) =>
-      setIntersecting(entry.isIntersecting),
-    );
+    if (refElement) {
+      const observer = new IntersectionObserver(([entry]) =>
+        setIsInViewport(entry.isIntersecting),
+      );
+      observer.observe(refElement);
 
-    if (ref.current) observer.observe(ref.current);
+      return () => {
+        if(observer)
+          observer.disconnect();
+      };
+    }
+  }, [refElement]);
 
-    return () => observer.disconnect();
-  }, [ref.current, ref]);
-
-  return isIntersecting;
+  return { isInViewport, ref: setRef };
 }
