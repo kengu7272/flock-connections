@@ -22,13 +22,13 @@ import PostDisplay from "~/client/src/components/PostDisplay";
 import User from "~/client/src/components/User";
 import { inputClass } from "~/client/src/utils/classes";
 import { useUploadThing } from "~/client/src/utils/uploadthing";
+import useOnScreen from "~/client/src/utils/useOnScreen";
 import { trpc } from "~/client/utils/trpc";
 import {
   FlockSchema,
   MemberInviteSchema,
   MemberInviteSchemaType,
 } from "~/server/validation";
-import useOnScreen from "~/client/src/utils/useOnScreen";
 
 export const Route = createLazyFileRoute("/_auth/flock/$flockId/")({
   component: Flock,
@@ -765,7 +765,7 @@ function Posts() {
             Create Post
           </Link>
         )}
-        {posts && !!posts.data?.pages[0].posts[0] && (
+        {!!posts.data?.pages[0].posts[0] && (
           <div className="space-y-2 rounded-lg bg-slate-800 p-2">
             {!posts.isLoading &&
               posts.data?.pages.map((page, pageIndex) =>

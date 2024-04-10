@@ -61,7 +61,7 @@ export default function Navbar() {
               <Link
                 onClick={() => setProfileMenu(false)}
                 className="block w-full rounded-lg py-3 text-center hover:bg-slate-600 active:bg-slate-500"
-                to="/profile"
+                to={"/profile" + loggedInData.username}
               >
                 Profile
               </Link>

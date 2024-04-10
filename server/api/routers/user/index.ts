@@ -41,7 +41,8 @@ export const userRouter = router({
 
       await ctx.db.update(Users).set(set).where(eq(Users.id, ctx.user.id));
     }),
-  getFlock: protectedProcedure.query(async ({ ctx }) => { const [flock] = await ctx.db
+  getFlock: protectedProcedure.query(async ({ ctx }) => {
+    const [flock] = await ctx.db
       .select({ flock: { name: Flocks.name } })
       .from(FlockMembers)
       .innerJoin(Flocks, eq(Flocks.id, FlockMembers.flockId))

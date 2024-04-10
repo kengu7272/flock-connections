@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { ArrowLeftCircle, ArrowRightCircle, Heart } from "lucide-react";
 import { DateTime } from "luxon";
-import { useState } from "react";
 import { toast } from "react-toastify";
+
 import { trpc } from "~/client/utils/trpc";
 
 export default function PostDisplay({
@@ -17,14 +18,16 @@ export default function PostDisplay({
   date: Date;
   likes: number;
   publicId: string;
-  flockId: string
+  flockId: string;
 }) {
   const [current, setCurrent] = useState(0);
   const [postLikes, setPostLikes] = useState(likes);
   const toggleLike = trpc.post.like.useMutation({
     onSuccess: (res) => {
       toast.success("Successfully " + res);
-      res === "Liked" ? setPostLikes((prev) => prev + 1) : setPostLikes((prev) => prev - 1)
+      res === "Liked"
+        ? setPostLikes((prev) => prev + 1)
+        : setPostLikes((prev) => prev - 1);
     },
     onError: (e) => toast.error(e.message),
   });
