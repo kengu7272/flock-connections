@@ -113,7 +113,7 @@ function Home() {
             </Link>
           </div>
         )}
-        {!!posts.data?.pages[0].posts[0] && (
+        {!!posts.data?.pages[0].posts[0] ? (
           <div className="space-y-2 rounded-lg bg-slate-800 p-2">
             {!posts.isLoading &&
               posts.data?.pages.map((page, pageIndex) =>
@@ -139,7 +139,11 @@ function Home() {
                 )),
               )}
           </div>
-        )}
+        ) : (
+            <div className="text-center text-lg font-semibold p-2 bg-slate-700 rounded-lg">
+              <span>No posts to show. Please check again later!</span>
+            </div>
+          )}
         {(posts.isLoading || posts.isFetchingNextPage) && (
           <span className="block w-full text-center">Loading...</span>
         )}

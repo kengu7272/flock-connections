@@ -143,7 +143,7 @@ function Flock() {
               onClick={(e) => e.stopPropagation()}
               className="absolute left-0 top-full z-50 whitespace-nowrap rounded-lg border border-slate-700 bg-slate-800 p-2"
             >
-              <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+              <form className="space-y-5 py-2 px-4" onSubmit={handleSubmit(onSubmit)}>
                 <h1 className="text-center text-3xl font-bold">
                   Update Description
                 </h1>
