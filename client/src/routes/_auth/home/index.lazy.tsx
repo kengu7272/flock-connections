@@ -52,7 +52,7 @@ function Home() {
       onClick={() => setSelectedInvite("")}
       className="flex w-full justify-center py-16"
     >
-      <main className="items-center-center mx-auto flex w-[95%] flex-col rounded-lg px-1 py-6 lg:w-3/5 lg:px-4 xl:w-2/5">
+      <main className="flex w-[95%] flex-col rounded-lg px-1 py-6 lg:w-3/5 lg:px-4 max-w-3xl">
         {!invites.isLoading && !!invites.data?.length && (
           <div className="my-2 flex max-h-96 min-h-40 flex-col items-center gap-4 overflow-y-auto rounded-lg border border-slate-600 p-2">
             <h3 className="text-2xl font-bold">Invites</h3>

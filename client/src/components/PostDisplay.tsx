@@ -51,7 +51,7 @@ export default function PostDisplay({
               current === index && (
                 <img
                   key={image}
-                  className="mx-auto h-[420px] rounded-lg object-contain"
+                  className="mx-auto h-[250px] md:h-[400px] lg:h-[500px] rounded-lg object-contain"
                   src={images[current]}
                 />
               ),
