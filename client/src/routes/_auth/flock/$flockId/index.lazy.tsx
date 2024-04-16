@@ -794,6 +794,7 @@ function Posts() {
                       publicId={post.publicId}
                       flockId={flock}
                       inFlock={flockMember}
+                      userLiked={!!post.userLiked}
                     />
                   </div>
                 )),
