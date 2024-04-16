@@ -10,6 +10,7 @@ services:
       MYSQL_DATABASE: "flock"
     volumes:
       - ~/Documents/dockerVolumes/mysqlData:/var/lib/mysql
+      - ./backup.sql:/backup.sql
     ports:
       - "3306:3306"
     expose:
