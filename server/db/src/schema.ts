@@ -104,6 +104,7 @@ export const FlockDetailsActions = mysqlTable("flockDetailAction", {
   actionId: bigint("actionId", { mode: "number", unsigned: true })
     .references(() => FlockActions.id, { onDelete: "cascade" })
     .primaryKey(),
+  relevantId: bigint("relevantId", { mode: "number", unsigned: true }), // pertaining id such as post pub id
   picture: json("picture").$type<string[]>(),
   description: varchar("description", { length: 500 }),
 });

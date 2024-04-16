@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { ArrowLeftCircle, ArrowRightCircle, Heart } from "lucide-react";
 import { DateTime } from "luxon";
@@ -14,6 +14,7 @@ export default function PostDisplay({
   publicId,
   flockId,
   userLiked,
+  inFlock,
 }: {
   images: string[];
   description: string | null;
@@ -22,6 +23,7 @@ export default function PostDisplay({
   publicId: string;
   flockId: string;
   userLiked?: boolean;
+  inFlock?: boolean;
 }) {
   const [current, setCurrent] = useState(0);
   const [postLikes, setPostLikes] = useState(likes);
@@ -37,9 +39,58 @@ export default function PostDisplay({
     onError: (e) => toast.error(e.message),
   });
 
+  const utils = trpc.useContext();
+  const [deletePrompt, setDeletePrompt] = useState(false);
+  const deletePost = trpc.flock.deletePost.useMutation({
+    onSuccess: () => {
+      toast.success("Successfully Created Session");
+      utils.flock.getPosts.invalidate();
+      setDeletePrompt(false)
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  useEffect(() => {
+    document.body.addEventListener("click", () => {
+      setDeletePrompt(false);
+    });
+  }, []);
+
   return (
     <div className="w-full space-y-3 rounded-lg bg-slate-700 py-2 text-sm">
       <div>
+        {inFlock && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative mx-auto w-fit"
+          >
+            <button
+              onClick={() => setDeletePrompt((prev) => !prev)}
+              className="rounded-lg bg-red-500 px-3 py-2 font-semibold hover:bg-red-600 active:bg-red-700"
+            >
+              Delete
+            </button>
+            {deletePrompt && (
+              <div className="absolute right-1/2 top-full z-10 mt-2 translate-x-1/2 space-y-2 rounded-lg bg-slate-800 p-2">
+                <span className="block text-center">Are you sure?</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => deletePost.mutate({ publicId })}
+                    className="rounded-lg bg-sky-500 px-3 py-2 font-semibold hover:bg-sky-600 active:bg-sky-700"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => setDeletePrompt(false)}
+                    className="rounded-lg bg-red-500 px-3 py-2 font-semibold hover:bg-red-600 active:bg-red-700"
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {date && (
           <span className="mx-auto my-2 block w-fit font-semibold">
             {DateTime.fromJSDate(date).toLocaleString()}
@@ -51,7 +102,7 @@ export default function PostDisplay({
               current === index && (
                 <img
                   key={image}
-                  className="mx-auto h-[250px] md:h-[400px] lg:h-[500px] rounded-lg object-contain"
+                  className="mx-auto h-[250px] rounded-lg object-contain md:h-[400px] lg:h-[500px]"
                   src={images[current]}
                 />
               ),
