@@ -45,7 +45,7 @@ export default function PostDisplay({
     onSuccess: () => {
       toast.success("Successfully Created Session");
       utils.flock.getPosts.invalidate();
-      setDeletePrompt(false)
+      setDeletePrompt(false);
     },
     onError: (e) => toast.error(e.message),
   });
