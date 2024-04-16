@@ -70,7 +70,7 @@ const Actions = [
   ...MemberActions,
   "CREATE POST",
   "EDIT POST",
-  "DELETE POST"
+  "DELETE POST",
 ] as const;
 export const FlockActions = mysqlTable("flockAction", {
   id: serial("id").primaryKey(),

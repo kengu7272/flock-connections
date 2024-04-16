@@ -52,7 +52,7 @@ function Home() {
       onClick={() => setSelectedInvite("")}
       className="flex w-full justify-center py-16"
     >
-      <main className="flex w-[95%] flex-col rounded-lg px-1 py-6 lg:w-3/5 lg:px-4 max-w-3xl">
+      <main className="flex w-[95%] max-w-3xl flex-col rounded-lg px-1 py-6 lg:w-3/5 lg:px-4">
         {!invites.isLoading && !!invites.data?.length && (
           <div className="my-2 flex max-h-96 min-h-40 flex-col items-center gap-4 overflow-y-auto rounded-lg border border-slate-600 p-2">
             <h3 className="text-2xl font-bold">Invites</h3>
@@ -113,7 +113,7 @@ function Home() {
             </Link>
           </div>
         )}
-        {!!posts.data?.pages[0].posts[0] ? (
+        {posts.data?.pages[0].posts[0] ? (
           <div className="space-y-2 rounded-lg bg-slate-800 p-2">
             {!posts.isLoading &&
               posts.data?.pages.map((page, pageIndex) =>
@@ -140,10 +140,10 @@ function Home() {
               )}
           </div>
         ) : (
-            <div className="text-center text-lg font-semibold p-2 bg-slate-700 rounded-lg">
-              <span>No posts to show. Please check again later!</span>
-            </div>
-          )}
+          <div className="rounded-lg bg-slate-700 p-2 text-center text-lg font-semibold">
+            <span>No posts to show. Please check again later!</span>
+          </div>
+        )}
         {(posts.isLoading || posts.isFetchingNextPage) && (
           <span className="block w-full text-center">Loading...</span>
         )}
