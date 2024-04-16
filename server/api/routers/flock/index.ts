@@ -161,6 +161,7 @@ export const flockRouter = router({
             eq(FlockActions.type, "UPDATE PICTURE"),
             eq(FlockActions.type, "UPDATE DESCRIPTION"),
             eq(FlockActions.type, "CREATE POST"),
+            eq(FlockActions.type, "DELETE POST"),
           ),
         ),
       )
@@ -540,6 +541,21 @@ export const flockRouter = router({
             publicId: nanoid(16),
           });
           return { consensus: "Yes" };
+        } else if (action.type === "DELETE POST") {
+          if (no >= majority || (yes === no && yesAndNo === members.count)) {
+            return { consensus: "No" };
+          }
+
+          const [{ picture, postId }] = await ctx.db
+            .select({ picture: Posts.picture, postId: Posts.id })
+            .from(FlockDetailsActions)
+            .innerJoin(Posts, eq(Posts.id, FlockDetailsActions.relevantId))
+            .where(eq(FlockDetailsActions.actionId, action.id));
+          await ctx.db.delete(Posts).where(eq(Posts.id, postId));
+          const keys = picture.map((pic) => getKey(pic));
+          utapi.deleteFiles(keys);
+
+          return { consensus: "Yes" };
         }
       }
     }),
@@ -637,5 +653,74 @@ export const flockRouter = router({
       }
 
       return { posts, nextCursor };
+    }),
+  deletePost: protectedProcedure
+    .input(z.object({ publicId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [post] = await ctx.db
+        .select({
+          id: Posts.id,
+          flockId: Posts.flockId,
+          picture: Posts.picture,
+          description: Posts.description,
+        })
+        .from(Posts)
+        .where(eq(Posts.publicId, input.publicId));
+
+      if (ctx.flock?.id !== post.flockId)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User is not in the Flock",
+        });
+
+      const [previousSession] = await ctx.db
+        .select({ id: FlockActions.id })
+        .from(FlockActions)
+        .innerJoin(
+          FlockDetailsActions,
+          eq(FlockDetailsActions.actionId, FlockActions.id),
+        )
+        .where(
+          and(
+            eq(FlockActions.type, "DELETE POST"),
+            eq(FlockActions.creator, ctx.user.id),
+            eq(FlockActions.open, true),
+            eq(FlockDetailsActions.relevantId, post.id),
+          ),
+        );
+      if (previousSession)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Existing Session",
+        });
+
+      // if only one member voting doesn't need to happen
+      const [members] = await ctx.db
+        .select({ count: count(FlockMembers.userId) })
+        .from(FlockMembers)
+        .where(eq(FlockMembers.flockId, ctx.flock.id));
+
+      const [{ insertId }] = await ctx.db.insert(FlockActions).values({
+        publicId: nanoid(16),
+        creator: ctx.user.id,
+        type: "DELETE POST",
+        flockId: ctx.flock.id,
+        ...(members.count === 1 ? { accepted: true, open: false } : {}),
+      });
+      await ctx.db.insert(FlockDetailsActions).values({
+        actionId: insertId,
+        relevantId: post.id,
+        picture: post.picture,
+        description: post.description,
+      });
+      await ctx.db.insert(FlockMemberVotes).values({
+        publicId: nanoid(16),
+        actionId: insertId,
+        vote: true,
+        userId: ctx.user.id,
+      });
+
+      if (members.count === 1)
+        await ctx.db.delete(Posts).where(eq(Posts.id, post.id));
     }),
 });

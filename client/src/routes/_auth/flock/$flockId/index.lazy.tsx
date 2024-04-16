@@ -542,7 +542,7 @@ const Voting = () => {
                     </div>
                   </div>
                 );
-              else if (vote.type === "CREATE POST") {
+              else if (vote.type === "CREATE POST" || vote.type === "DELETE POST") {
                 return (
                   <div
                     key={vote.publicId}
@@ -551,7 +551,7 @@ const Voting = () => {
                     <div className="flex w-full flex-col items-center gap-4 lg:flex-row lg:justify-center lg:gap-0">
                       <div className="mx-auto text-center">
                         <span className="block font-semibold">Action</span>
-                        <span>Create Post</span>
+                        <span>{vote.type === "CREATE POST" ? "Create " : "Delete "}Post</span>
                       </div>
                       <div className="mx-auto text-center">
                         <span className="block font-semibold">Creator</span>
@@ -784,6 +784,7 @@ function Posts() {
                       likes={post.likes}
                       publicId={post.publicId}
                       flockId={flock}
+                      inFlock={flockMember}
                     />
                   </div>
                 )),
