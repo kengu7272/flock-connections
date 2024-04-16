@@ -143,7 +143,10 @@ function Flock() {
               onClick={(e) => e.stopPropagation()}
               className="absolute left-0 top-full z-50 whitespace-nowrap rounded-lg border border-slate-700 bg-slate-800 p-2"
             >
-              <form className="space-y-5 py-2 px-4" onSubmit={handleSubmit(onSubmit)}>
+              <form
+                className="space-y-5 px-4 py-2"
+                onSubmit={handleSubmit(onSubmit)}
+              >
                 <h1 className="text-center text-3xl font-bold">
                   Update Description
                 </h1>
@@ -497,52 +500,55 @@ const Voting = () => {
                     className="flex flex-col items-center gap-4 rounded-lg bg-slate-700 px-2 py-4"
                   >
                     <div className="flex w-full flex-col items-center justify-center gap-y-4 lg:flex-row lg:gap-0">
-                      <div className="mx-auto text-center">
+                      <div className="text-center">
                         <span className="block font-semibold">Action</span>
                         <span>Update Description</span>
                       </div>
-                      <div className="mx-auto text-center">
+                      <div className="text-center">
                         <span className="block font-semibold">Creator</span>
                         <span>{vote.creator}</span>
                       </div>
-                      <div className="mx-auto flex items-center justify-end gap-2">
-                        <div className="flex flex-col items-center">
-                          <button
-                            onClick={() =>
-                              castVote.mutate({
-                                vote: true,
-                                publicId: vote.publicId,
-                              })
-                            }
-                            className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
-                          >
-                            Yes
-                          </button>
-                          <span>({vote.yes})</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <button
-                            onClick={() =>
-                              castVote.mutate({
-                                vote: false,
-                                publicId: vote.publicId,
-                              })
-                            }
-                            className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
-                          >
-                            No
-                          </button>
-                          <span>({vote.no})</span>
-                        </div>
-                      </div>
                     </div>
                     <div className="w-full">
-                      <span className="w-full font-semibold">Change To</span>
-                      <p>{vote.description}</p>
+                      <span className="font-semibold">Change To: </span>
+                      <p className="inline">{vote.description}</p>
+                    </div>
+                    <div className="mx-auto flex items-center justify-end gap-2">
+                      <div className="flex flex-col items-center">
+                        <button
+                          onClick={() =>
+                            castVote.mutate({
+                              vote: true,
+                              publicId: vote.publicId,
+                            })
+                          }
+                          className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                        >
+                          Yes
+                        </button>
+                        <span>({vote.yes})</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <button
+                          onClick={() =>
+                            castVote.mutate({
+                              vote: false,
+                              publicId: vote.publicId,
+                            })
+                          }
+                          className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                        >
+                          No
+                        </button>
+                        <span>({vote.no})</span>
+                      </div>
                     </div>
                   </div>
                 );
-              else if (vote.type === "CREATE POST" || vote.type === "DELETE POST") {
+              else if (
+                vote.type === "CREATE POST" ||
+                vote.type === "DELETE POST"
+              ) {
                 return (
                   <div
                     key={vote.publicId}
@@ -551,7 +557,10 @@ const Voting = () => {
                     <div className="flex w-full flex-col items-center gap-4 lg:flex-row lg:justify-center lg:gap-0">
                       <div className="mx-auto text-center">
                         <span className="block font-semibold">Action</span>
-                        <span>{vote.type === "CREATE POST" ? "Create " : "Delete "}Post</span>
+                        <span>
+                          {vote.type === "CREATE POST" ? "Create " : "Delete "}
+                          Post
+                        </span>
                       </div>
                       <div className="mx-auto text-center">
                         <span className="block font-semibold">Creator</span>
