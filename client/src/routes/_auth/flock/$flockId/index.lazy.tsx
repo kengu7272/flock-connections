@@ -361,7 +361,7 @@ const Voting = () => {
     onSuccess: (res) => {
       toast.success(
         res?.consensus
-          ? `Voting finished, consesus is ${res.consensus}`
+          ? `Voting finished, consensus is ${res.consensus}`
           : "Successfully Voted",
       );
       votes.refetch();
