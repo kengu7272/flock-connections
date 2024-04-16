@@ -313,7 +313,7 @@ const Members = () => {
                       onClick={() =>
                         createKick.mutate({ username: member.user.username })
                       }
-                      className="w-full rounded-lg px-2 py-3 hover:bg-slate-800 active:bg-slate-900"
+                      className="w-full font-semibold rounded-lg px-2 py-3 hover:bg-slate-800 active:bg-slate-900"
                     >
                       Vote to Kick
                     </button>
@@ -407,7 +407,7 @@ const Voting = () => {
                           publicId: vote.publicId,
                         })
                       }
-                      className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                      className="rounded-lg font-semibold bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
                     >
                       Yes
                     </button>
@@ -421,7 +421,7 @@ const Voting = () => {
                           publicId: vote.publicId,
                         })
                       }
-                      className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                      className="rounded-lg font-semibold bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
                     >
                       No
                     </button>
@@ -470,7 +470,7 @@ const Voting = () => {
                               publicId: vote.publicId,
                             })
                           }
-                          className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                          className="rounded-lg font-semibold bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
                         >
                           Yes
                         </button>
@@ -484,7 +484,7 @@ const Voting = () => {
                               publicId: vote.publicId,
                             })
                           }
-                          className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                          className="rounded-lg font-semibold bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
                         >
                           No
                         </button>
@@ -522,7 +522,7 @@ const Voting = () => {
                               publicId: vote.publicId,
                             })
                           }
-                          className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                          className="rounded-lg font-semibold bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
                         >
                           Yes
                         </button>
@@ -536,7 +536,7 @@ const Voting = () => {
                               publicId: vote.publicId,
                             })
                           }
-                          className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                          className="rounded-lg font-semibold bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
                         >
                           No
                         </button>
@@ -581,7 +581,7 @@ const Voting = () => {
                               publicId: vote.publicId,
                             })
                           }
-                          className="rounded-lg bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
+                          className="rounded-lg font-semibold bg-green-600 px-3 py-2 hover:bg-green-700 active:bg-green-800"
                         >
                           Yes
                         </button>
@@ -595,7 +595,7 @@ const Voting = () => {
                               publicId: vote.publicId,
                             })
                           }
-                          className="rounded-lg bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
+                          className="rounded-lg font-semibold bg-red-600 px-3 py-2 hover:bg-red-700 active:bg-red-800"
                         >
                           No
                         </button>
