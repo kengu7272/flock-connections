@@ -183,7 +183,7 @@ export const PostComments = mysqlTable("postComment", {
   userId: bigint("userId", { mode: "number", unsigned: true })
     .notNull()
     .references(() => Users.id, { onDelete: "cascade" }),
-  comment: varchar("comment", { length: 255 }).notNull(),
+  comment: varchar("comment", { length: 512 }).notNull(),
 });
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);

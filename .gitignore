@@ -31,3 +31,5 @@ tailwind.css
 # Docker peristed db data
 mysqlData
 backup.sql
+
+seed.ts
