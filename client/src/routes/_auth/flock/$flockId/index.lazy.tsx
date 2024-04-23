@@ -111,7 +111,7 @@ function Flock() {
 
   return (
     <div className="w-full py-24">
-      <main className="items-center-center mx-auto flex w-[95%] flex-col space-y-4 rounded-lg bg-slate-700 px-1 py-6 lg:w-3/5 lg:px-4 max-w-3xl">
+      <main className="items-center-center mx-auto flex w-[95%] max-w-3xl flex-col space-y-4 rounded-lg bg-slate-700 px-1 py-6 lg:w-3/5 lg:px-4">
         <div className="flex items-center gap-3">
           <div className="relative">
             <img

@@ -81,14 +81,12 @@ export const postRouter = router({
         .select()
         .from(Posts)
         .where(eq(Posts.publicId, input.postPublicId));
-      await ctx.db
-        .insert(PostComments)
-        .values({
-          comment: input.comment,
-          publicId: nanoid(16),
-          userId: ctx.user.id,
-          postId: id,
-        });
+      await ctx.db.insert(PostComments).values({
+        comment: input.comment,
+        publicId: nanoid(16),
+        userId: ctx.user.id,
+        postId: id,
+      });
     }),
   getComments: protectedProcedure
     .input(z.object({ postPublicId: z.string(), cursor: z.number().nullish() }))
@@ -97,8 +95,15 @@ export const postRouter = router({
         .select({ id: Posts.id })
         .from(Posts)
         .where(eq(Posts.publicId, input.postPublicId));
-      const comments =  await ctx.db
-        .select({ comment: { id: PostComments.id, publicId: PostComments.publicId, text: PostComments.comment}, user: { username: Users.username, picture: Users.picture } })
+      const comments = await ctx.db
+        .select({
+          comment: {
+            id: PostComments.id,
+            publicId: PostComments.publicId,
+            text: PostComments.comment,
+          },
+          user: { username: Users.username, picture: Users.picture },
+        })
         .from(PostComments)
         .innerJoin(Users, eq(Users.id, PostComments.userId))
         .where(
@@ -116,7 +121,6 @@ export const postRouter = router({
         nextCursor = nextItem!.comment.id;
       }
 
-      return { comments, nextCursor}
-
+      return { comments, nextCursor };
     }),
 });
