@@ -13,6 +13,7 @@ import {
   Flocks,
   PostLikes,
   Posts,
+  PostViews,
   Users,
 } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
@@ -627,6 +628,7 @@ export const flockRouter = router({
           publicId: Posts.publicId,
           createdAt: Posts.createdAt,
           userLiked: PostLikes.userId,
+          userViewed: PostViews.userId,
         })
         .from(Posts)
         .innerJoin(Flocks, eq(Flocks.id, Posts.flockId))
@@ -635,6 +637,13 @@ export const flockRouter = router({
           and(
             eq(PostLikes.postId, Posts.id),
             eq(PostLikes.userId, ctx.user.id),
+          ),
+        )
+        .leftJoin(
+          PostViews,
+          and(
+            eq(PostViews.postId, Posts.id),
+            eq(PostViews.userId, ctx.user.id),
           ),
         )
         .where(
@@ -652,7 +661,13 @@ export const flockRouter = router({
         nextCursor = nextItem!.id;
       }
 
-      return { posts, nextCursor };
+      const formatted = posts.map((post) => ({
+        ...post,
+        userLiked: !!post.userLiked,
+        userViewed: !!post.userViewed,
+      }));
+
+      return { posts: formatted, nextCursor };
     }),
   deletePost: protectedProcedure
     .input(z.object({ publicId: z.string() }))

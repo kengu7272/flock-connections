@@ -145,7 +145,7 @@ function Profile() {
                   e.preventDefault();
                   removeBio.mutate();
                 }}
-                className="mx-auto w-fit font-semibold rounded-lg bg-red-600 px-3 py-2 text-sm hover:bg-red-700 active:bg-red-800"
+                className="mx-auto w-fit rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold hover:bg-red-700 active:bg-red-800"
               >
                 Remove Bio
               </button>
@@ -153,7 +153,7 @@ function Profile() {
             <input
               type="submit"
               value="Update"
-              className="ml-auto font-semibold block rounded-lg bg-sky-600 px-3 py-2 text-white hover:bg-sky-700 active:bg-sky-800 disabled:opacity-75"
+              className="ml-auto block rounded-lg bg-sky-600 px-3 py-2 font-semibold text-white hover:bg-sky-700 active:bg-sky-800 disabled:opacity-75"
             />
           </form>
         )}

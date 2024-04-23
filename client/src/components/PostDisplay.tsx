@@ -5,6 +5,7 @@ import { DateTime } from "luxon";
 import { toast } from "react-toastify";
 
 import { trpc } from "~/client/utils/trpc";
+import useInViewport from "../utils/useInViewport";
 
 export default function PostDisplay({
   images,
@@ -14,6 +15,7 @@ export default function PostDisplay({
   publicId,
   flockId,
   userLiked,
+  userViewed,
   inFlock,
 }: {
   images: string[];
@@ -23,6 +25,7 @@ export default function PostDisplay({
   publicId: string;
   flockId: string;
   userLiked?: boolean;
+  userViewed?: boolean;
   inFlock?: boolean;
 }) {
   const [current, setCurrent] = useState(0);
@@ -56,8 +59,20 @@ export default function PostDisplay({
     });
   }, []);
 
+  const viewed = trpc.post.view.useMutation();
+  const [viewVar, setViewVar] = useState(!!userViewed);
+  const { isInViewport, ref } = useInViewport();
+  if (isInViewport && !viewVar) {
+    viewed.mutate({ postPublicId: publicId });
+    setViewVar(true);
+    ref(null);
+  }
+
   return (
-    <div className="w-full space-y-3 rounded-lg bg-slate-700 py-2 text-sm">
+    <div
+      ref={!viewVar ? ref : undefined}
+      className="w-full space-y-3 rounded-lg bg-slate-700 py-2 text-sm"
+    >
       <div>
         {inFlock && (
           <div

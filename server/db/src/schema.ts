@@ -159,4 +159,18 @@ export const PostLikes = mysqlTable(
   (table) => ({ unq: unique().on(table.postId, table.userId) }),
 );
 
+export const PostViews = mysqlTable(
+  "postView",
+  {
+    id: serial("id").primaryKey(),
+    postId: bigint("postId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => Posts.id, { onDelete: "cascade" }),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => Users.id, { onDelete: "cascade" }),
+  },
+  (table) => ({ unq: unique().on(table.postId, table.userId) }),
+);
+
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);
