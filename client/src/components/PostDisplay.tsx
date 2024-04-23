@@ -89,6 +89,7 @@ export default function PostDisplay({
     onSuccess: () => {
       toast.success("Successfully Commented");
       comments.refetch();
+      setValue("comment", "")
     },
     onError: (e) => toast.error(e.message),
   });
@@ -99,6 +100,8 @@ export default function PostDisplay({
     register,
     handleSubmit,
     formState: { errors },
+    getValues,
+    setValue,
   } = useForm<PostCommentSchemaType>({
     resolver: zodResolver(PostCommentSchema),
   });
@@ -246,7 +249,7 @@ export default function PostDisplay({
                 className="max-h-40 w-full rounded-lg bg-slate-600 p-2 text-white focus:outline-none"
                 {...register("comment")}
               />
-              {errors.comment && (
+              {errors.comment && !!getValues("comment").length && (
                 <span className="absolute left-2 top-full text-sm text-red-500">
                   {errors.comment.message}
                 </span>
