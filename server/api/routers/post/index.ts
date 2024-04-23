@@ -1,10 +1,17 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, lte } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
-import { PostLikes, Posts, PostViews } from "~/server/db/src/schema";
+import {
+  PostComments,
+  PostLikes,
+  Posts,
+  PostViews,
+  Users,
+} from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
+import { PostCommentSchema } from "~/server/validation";
 
 export const postRouter = router({
   like: protectedProcedure
@@ -61,6 +68,55 @@ export const postRouter = router({
           message: "User Already Viewed",
         });
 
-      await ctx.db.insert(PostViews).values({ userId: ctx.user.id, postId });
+      await ctx.db
+        .insert(PostViews)
+        .values({ userId: ctx.user.id, postId, publicId: nanoid(16) });
+    }),
+  comment: protectedProcedure
+    .input(
+      z.intersection(PostCommentSchema, z.object({ postPublicId: z.string() })),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const [{ id }] = await ctx.db
+        .select()
+        .from(Posts)
+        .where(eq(Posts.publicId, input.postPublicId));
+      await ctx.db
+        .insert(PostComments)
+        .values({
+          comment: input.comment,
+          publicId: nanoid(16),
+          userId: ctx.user.id,
+          postId: id,
+        });
+    }),
+  getComments: protectedProcedure
+    .input(z.object({ postPublicId: z.string(), cursor: z.number().nullish() }))
+    .query(async ({ input, ctx }) => {
+      const [{ id }] = await ctx.db
+        .select({ id: Posts.id })
+        .from(Posts)
+        .where(eq(Posts.publicId, input.postPublicId));
+      const comments =  await ctx.db
+        .select({ comment: { id: PostComments.id, publicId: PostComments.publicId, text: PostComments.comment}, user: { username: Users.username, picture: Users.picture } })
+        .from(PostComments)
+        .innerJoin(Users, eq(Users.id, PostComments.userId))
+        .where(
+          and(
+            eq(PostComments.postId, id),
+            input.cursor ? lte(PostComments.id, input.cursor) : undefined,
+          ),
+        )
+        .orderBy(desc(PostComments.id))
+        .limit(8);
+
+      let nextCursor = undefined;
+      if (comments.length > 7) {
+        const nextItem = comments.pop();
+        nextCursor = nextItem!.comment.id;
+      }
+
+      return { comments, nextCursor}
+
     }),
 });

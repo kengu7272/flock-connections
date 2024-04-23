@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
-import { ArrowLeftCircle, ArrowRightCircle, Heart } from "lucide-react";
+import {
+  ArrowLeftCircle,
+  ArrowRightCircle,
+  Heart,
+  MessageSquareText,
+} from "lucide-react";
 import { DateTime } from "luxon";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import { trpc } from "~/client/utils/trpc";
+import { PostCommentSchema, PostCommentSchemaType } from "~/server/validation";
 import useInViewport from "../utils/useInViewport";
+import User from "./User";
 
 export default function PostDisplay({
   images,
@@ -61,12 +70,38 @@ export default function PostDisplay({
 
   const viewed = trpc.post.view.useMutation();
   const [viewVar, setViewVar] = useState(!!userViewed);
-  const { isInViewport, ref } = useInViewport();
-  if (isInViewport && !viewVar) {
+  const { isInViewport: postInViewport, ref } = useInViewport();
+  if (postInViewport && !viewVar) {
     viewed.mutate({ postPublicId: publicId });
     setViewVar(true);
     ref(null);
   }
+
+  const [openComment, setOpenComment] = useState(false);
+  const comments = trpc.post.getComments.useInfiniteQuery(
+    { postPublicId: publicId },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      enabled: openComment,
+    },
+  );
+  const comment = trpc.post.comment.useMutation({
+    onSuccess: () => {
+      toast.success("Successfully Commented");
+      comments.refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PostCommentSchemaType>({
+    resolver: zodResolver(PostCommentSchema),
+  });
+  const onSubmit: SubmitHandler<PostCommentSchemaType> = (data) => {
+    comment.mutate({ postPublicId: publicId, comment: data.comment });
+  };
 
   return (
     <div
@@ -147,24 +182,75 @@ export default function PostDisplay({
       </div>
       <div className="px-2">
         {likes !== undefined && !!publicId && (
-          <div className="mb-1 flex items-center gap-1">
+          <div className="mb-1 flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => toggleLike.mutate({ postPublicId: publicId })}
+                className="block hover:text-sky-600 active:text-sky-700"
+              >
+                <Heart
+                  className={clsx({
+                    "h-5 w-5": true,
+                    "text-sky-700": heartColor && userLiked !== undefined,
+                  })}
+                />
+              </button>
+              <span className="text-lg font-semibold">{postLikes}</span>
+            </div>
             <button
-              onClick={() => toggleLike.mutate({ postPublicId: publicId })}
+              onClick={() => setOpenComment((prev) => !prev)}
               className="block hover:text-sky-600 active:text-sky-700"
             >
-              <Heart
-                className={clsx({
-                  "h-5 w-5": true,
-                  "text-sky-700": heartColor && userLiked !== undefined,
-                })}
-              />
+              <MessageSquareText className="h-5 w-5" />
             </button>
-            <span className="text-lg font-semibold">{postLikes}</span>
           </div>
         )}
         <span className="font-semibold">{flockId}</span>
         <p>{description}</p>
       </div>
+      {openComment && (
+        <div className="space-y-2 bg-slate-800 p-2">
+          <span>Comments</span>
+          {comments.data?.pages.length && (
+            <div className="max-h-64 space-y-1 overflow-y-auto">
+              {comments.data.pages.map((page) =>
+                page.comments.map((comment) => (
+                  <div
+                    key={comment.comment.id}
+                    className="flex flex-col space-y-2 rounded-lg bg-slate-700 p-2"
+                  >
+                    <User
+                      picture={comment.user.picture}
+                      username={comment.user.username}
+                    />
+                    <p>{comment.comment.text}</p>
+                  </div>
+                )),
+              )}
+            </div>
+          )}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex w-full items-center gap-2"
+          >
+            <div className="w-full relative">
+              <textarea
+                placeholder="Comment"
+                className="max-h-40 rounded-lg bg-slate-600 p-2 text-white focus:outline-none w-full"
+                {...register("comment")}
+              />
+              {errors.comment && (
+                <span className="text-sm text-red-500 absolute top-full left-2">
+                  {errors.comment.message}
+                </span>
+              )}
+            </div>
+            <button className="h-fit rounded-md bg-sky-600 px-4 py-3 font-semibold hover:bg-sky-700 active:bg-sky-800">
+              Comment
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
