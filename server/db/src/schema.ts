@@ -163,6 +163,7 @@ export const PostViews = mysqlTable(
   "postView",
   {
     id: serial("id").primaryKey(),
+    publicId: varchar("publicId", { length: 16 }).unique().notNull(),
     postId: bigint("postId", { mode: "number", unsigned: true })
       .notNull()
       .references(() => Posts.id, { onDelete: "cascade" }),
@@ -172,5 +173,17 @@ export const PostViews = mysqlTable(
   },
   (table) => ({ unq: unique().on(table.postId, table.userId) }),
 );
+
+export const PostComments = mysqlTable("postComment", {
+  id: serial("id").primaryKey(),
+  publicId: varchar("publicId", { length: 16 }).unique().notNull(),
+  postId: bigint("postId", { mode: "number", unsigned: true })
+    .notNull()
+    .references(() => Posts.id, { onDelete: "cascade" }),
+  userId: bigint("userId", { mode: "number", unsigned: true })
+    .notNull()
+    .references(() => Users.id, { onDelete: "cascade" }),
+  comment: varchar("comment", { length: 255 }).notNull(),
+});
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);
