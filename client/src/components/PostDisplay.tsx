@@ -119,6 +119,7 @@ export default function PostDisplay({
                   key={image}
                   className="mx-auto h-[250px] rounded-lg object-contain md:h-[400px] lg:h-[500px]"
                   src={images[current]}
+                  loading="lazy"
                 />
               ),
           )}
