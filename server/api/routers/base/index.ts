@@ -1,4 +1,4 @@
-import { and, desc, eq, lte, ne } from "drizzle-orm";
+import { and, desc, eq, isNull, lte, ne } from "drizzle-orm";
 import { z } from "zod";
 
 import {
@@ -6,6 +6,7 @@ import {
   Flocks,
   PostLikes,
   Posts,
+  PostViews,
   Users,
 } from "~/server/db/src/schema";
 import { protectedProcedure, publicProcedure, router } from "~/server/trpc";
@@ -67,6 +68,7 @@ export const baseRouter = router({
             picture: Flocks.picture,
           },
           userLiked: PostLikes.userId,
+          userViewed: PostViews.userId,
         })
         .from(Posts)
         .innerJoin(Flocks, eq(Flocks.id, Posts.flockId))
@@ -77,10 +79,18 @@ export const baseRouter = router({
             eq(PostLikes.userId, ctx.user.id),
           ),
         )
+        .leftJoin(
+          PostViews,
+          and(
+            eq(PostViews.postId, Posts.id),
+            eq(PostViews.userId, ctx.user.id),
+          ),
+        )
         .where(
           and(
             ne(Posts.flockId, ctx.flock?.id ?? -1),
             cursor ? lte(Posts.id, cursor) : undefined,
+            isNull(PostViews.userId),
           ),
         )
         .orderBy(desc(Posts.id))
@@ -92,6 +102,12 @@ export const baseRouter = router({
         nextCursor = nextItem!.post.id;
       }
 
-      return { posts, nextCursor };
+      const formatted = posts.map((post) => ({
+        ...post,
+        userLiked: !!post.userLiked,
+        userViewed: !!post.userViewed,
+      }));
+
+      return { posts: formatted, nextCursor };
     }),
 });

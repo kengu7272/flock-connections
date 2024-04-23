@@ -4,7 +4,7 @@ import { Check, Menu, X } from "lucide-react";
 import { toast } from "react-toastify";
 
 import PostDisplay from "~/client/src/components/PostDisplay";
-import useOnScreen from "~/client/src/utils/useOnScreen";
+import useOnScreen from "~/client/src/utils/useInViewport";
 import { trpc } from "~/client/utils/trpc";
 
 export const Route = createLazyFileRoute("/_auth/home/")({
@@ -133,7 +133,8 @@ function Home() {
                       likes={post.post.likes}
                       publicId={post.post.publicId}
                       flockId={post.flock.name}
-                      userLiked={!!post.userLiked}
+                      userLiked={post.userLiked}
+                      userViewed={post.userViewed}
                     />
                   </div>
                 )),

@@ -1,8 +1,9 @@
+import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
-import { PostLikes, Posts } from "~/server/db/src/schema";
+import { PostLikes, Posts, PostViews } from "~/server/db/src/schema";
 import { protectedProcedure, router } from "~/server/trpc";
 
 export const postRouter = router({
@@ -39,5 +40,27 @@ export const postRouter = router({
         .where(eq(Posts.id, postId));
 
       return "Liked";
+    }),
+  view: protectedProcedure
+    .input(z.object({ postPublicId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const [{ postId, user }] = await ctx.db
+        .select({ postId: Posts.id, user: PostViews.userId })
+        .from(Posts)
+        .leftJoin(
+          PostViews,
+          and(
+            eq(PostViews.postId, Posts.id),
+            eq(PostViews.userId, ctx.user.id),
+          ),
+        )
+        .where(eq(Posts.publicId, input.postPublicId));
+      if (user)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "User Already Viewed",
+        });
+
+      await ctx.db.insert(PostViews).values({ userId: ctx.user.id, postId });
     }),
 });
