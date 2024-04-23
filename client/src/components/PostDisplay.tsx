@@ -92,6 +92,9 @@ export default function PostDisplay({
     },
     onError: (e) => toast.error(e.message),
   });
+  const { isInViewport: lastComment, ref: commentRef } = useInViewport();
+  if (lastComment && comments.hasNextPage && !comments.isLoading)
+    comments.fetchNextPage();
   const {
     register,
     handleSubmit,
@@ -213,11 +216,15 @@ export default function PostDisplay({
           <span>Comments</span>
           {comments.data?.pages.length && (
             <div className="max-h-64 space-y-1 overflow-y-auto">
-              {comments.data.pages.map((page) =>
-                page.comments.map((comment) => (
+              {comments.data.pages.map((page, pageIndex) =>
+                page.comments.map((comment, commentIndex) => (
                   <div
                     key={comment.comment.id}
                     className="flex flex-col space-y-2 rounded-lg bg-slate-700 p-2"
+                    {...(pageIndex === comments.data.pages.length - 1 &&
+                    commentIndex === page.comments.length - 1
+                      ? { ref: commentRef }
+                      : {})}
                   >
                     <User
                       picture={comment.user.picture}
@@ -233,14 +240,14 @@ export default function PostDisplay({
             onSubmit={handleSubmit(onSubmit)}
             className="flex w-full items-center gap-2"
           >
-            <div className="w-full relative">
+            <div className="relative w-full">
               <textarea
                 placeholder="Comment"
-                className="max-h-40 rounded-lg bg-slate-600 p-2 text-white focus:outline-none w-full"
+                className="max-h-40 w-full rounded-lg bg-slate-600 p-2 text-white focus:outline-none"
                 {...register("comment")}
               />
               {errors.comment && (
-                <span className="text-sm text-red-500 absolute top-full left-2">
+                <span className="absolute left-2 top-full text-sm text-red-500">
                   {errors.comment.message}
                 </span>
               )}
