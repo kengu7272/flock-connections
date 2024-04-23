@@ -49,6 +49,9 @@ export const PostCreationSchema = z.object({
 export type PostCreationSchemaType = z.infer<typeof PostCreationSchema>;
 
 export const PostCommentSchema = z.object({
-  comment: z.string().max(512).refine((val) => !!val.trim())
-})
-export type PostCommentSchemaType = z.infer<typeof PostCommentSchema>
+  comment: z
+    .string()
+    .max(512)
+    .refine((val) => !!val.trim()),
+});
+export type PostCommentSchemaType = z.infer<typeof PostCommentSchema>;

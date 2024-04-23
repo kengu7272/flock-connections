@@ -89,7 +89,7 @@ export default function PostDisplay({
     onSuccess: () => {
       toast.success("Successfully Commented");
       comments.refetch();
-      setValue("comment", "")
+      setValue("comment", "");
     },
     onError: (e) => toast.error(e.message),
   });
@@ -216,7 +216,7 @@ export default function PostDisplay({
       </div>
       {openComment && (
         <div className="space-y-2 bg-slate-800 p-2">
-          <span>Comments</span>
+          <span className="text-lg font-semibold">Comments</span>
           {comments.data?.pages.length && (
             <div className="max-h-64 space-y-1 overflow-y-auto">
               {comments.data.pages.map((page, pageIndex) =>
