@@ -222,18 +222,20 @@ export default function PostDisplay({
               {comments.data.pages.map((page, pageIndex) =>
                 page.comments.map((comment, commentIndex) => (
                   <div
-                    key={comment.comment.id}
-                    className="flex flex-col space-y-2 rounded-lg bg-slate-700 p-2"
                     {...(pageIndex === comments.data.pages.length - 1 &&
                     commentIndex === page.comments.length - 1
                       ? { ref: commentRef }
                       : {})}
+                    key={comment.comment.publicId}
                   >
-                    <User
+                    <Comment
+                      comment={comment.comment.text}
                       picture={comment.user.picture}
                       username={comment.user.username}
+                      likes={comment.comment.likes}
+                      userLiked={comment.comment.userLiked}
+                      publicId={comment.comment.publicId}
                     />
-                    <p>{comment.comment.text}</p>
                   </div>
                 )),
               )}
@@ -264,3 +266,55 @@ export default function PostDisplay({
     </div>
   );
 }
+
+const Comment = ({
+  comment,
+  username,
+  picture,
+  likes,
+  userLiked,
+  publicId,
+}: {
+  comment: string;
+  username: string;
+  picture: string;
+  likes: number;
+  userLiked: boolean;
+  publicId: string;
+}) => {
+  const [heartColor, setHeartColor] = useState(userLiked);
+  const [commentLikes, setCommentLikes] = useState(likes);
+  const toggleLike = trpc.post.likeComment.useMutation({
+    onSuccess: (res) => {
+      toast.success("Successfully " + res);
+      res === "Liked"
+        ? setCommentLikes((prev) => prev + 1)
+        : setCommentLikes((prev) => prev - 1);
+      setHeartColor((prev) => !prev);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  return (
+    <div className="flex justify-between gap-2 rounded-lg bg-slate-700 p-2">
+      <div className="flex flex-col gap-2">
+        <User picture={picture} username={username} />
+        <p>{comment}</p>
+      </div>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => toggleLike.mutate({ commentPublicId: publicId })}
+        >
+          <Heart
+            className={clsx({
+              "h-5 w-5": true,
+              "text-sky-700": heartColor && userLiked !== undefined,
+            })}
+          />
+        </button>
+        <span>{commentLikes}</span>
+      </div>
+    </div>
+  );
+};
+
