@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, lte } from "drizzle-orm";
+import { and, desc, eq, } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
@@ -106,19 +106,15 @@ export const postRouter = router({
         })
         .from(PostComments)
         .innerJoin(Users, eq(Users.id, PostComments.userId))
-        .where(
-          and(
-            eq(PostComments.postId, id),
-            input.cursor ? lte(PostComments.id, input.cursor) : undefined,
-          ),
-        )
-        .orderBy(desc(PostComments.id))
-        .limit(8);
+        .where(eq(PostComments.postId, id))
+        .orderBy(desc(PostComments.likes), desc(PostComments.id))
+        .limit(8)
+        .offset(input.cursor ?? 0);
 
       let nextCursor = undefined;
       if (comments.length > 7) {
-        const nextItem = comments.pop();
-        nextCursor = nextItem!.comment.id;
+        comments.pop();
+        nextCursor = (input.cursor ?? 0) + 7;
       }
 
       return { comments, nextCursor };

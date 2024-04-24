@@ -44,7 +44,7 @@ function Home() {
   );
 
   const { isInViewport: lastPostVisible, ref } = useOnScreen();
-  if (lastPostVisible && posts.hasNextPage && !posts.isLoading)
+  if (lastPostVisible && posts.hasNextPage && !posts.isFetching)
     posts.fetchNextPage();
 
   return (

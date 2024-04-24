@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, lte, ne } from "drizzle-orm";
+import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import { z } from "zod";
 
 import {
@@ -52,7 +52,7 @@ export const baseRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const { cursor } = input;
-
+      
       const posts = await ctx.db
         .select({
           post: {
@@ -87,19 +87,15 @@ export const baseRouter = router({
           ),
         )
         .where(
-          and(
-            ne(Posts.flockId, ctx.flock?.id ?? -1),
-            cursor ? lte(Posts.id, cursor) : undefined,
-            isNull(PostViews.userId),
-          ),
+          and(ne(Posts.flockId, ctx.flock?.id ?? -1), isNull(PostViews.userId)),
         )
-        .orderBy(desc(Posts.id))
+        .orderBy(desc(Posts.likes), desc(Posts.id))
         .limit(8);
 
       let nextCursor = undefined;
       if (posts.length > 7) {
-        const nextItem = posts.pop();
-        nextCursor = nextItem!.post.id;
+        posts.pop();
+        nextCursor = (cursor ?? 0) + posts.length;
       }
 
       const formatted = posts.map((post) => ({
@@ -111,3 +107,4 @@ export const baseRouter = router({
       return { posts: formatted, nextCursor };
     }),
 });
+

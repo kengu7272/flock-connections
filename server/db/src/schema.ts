@@ -184,6 +184,9 @@ export const PostComments = mysqlTable("postComment", {
     .notNull()
     .references(() => Users.id, { onDelete: "cascade" }),
   comment: varchar("comment", { length: 512 }).notNull(),
+  likes: bigint("likes", { unsigned: true, mode: "number" })
+    .default(0)
+    .notNull(),
 });
 
 export const PostCommentLikes = mysqlTable(
@@ -202,4 +205,3 @@ export const PostCommentLikes = mysqlTable(
 );
 
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);
-

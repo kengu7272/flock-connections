@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import {
@@ -69,11 +69,11 @@ export default function PostDisplay({
   }, []);
 
   const viewed = trpc.post.view.useMutation();
-  const [viewVar, setViewVar] = useState(!!userViewed);
+  const isViewed = useRef<boolean>(!!userViewed);
   const { isInViewport: postInViewport, ref } = useInViewport();
-  if (postInViewport && !viewVar) {
+  if (postInViewport && !isViewed.current) {
+    isViewed.current = true;
     viewed.mutate({ postPublicId: publicId });
-    setViewVar(true);
     ref(null);
   }
 
@@ -111,7 +111,7 @@ export default function PostDisplay({
 
   return (
     <div
-      ref={!viewVar ? ref : undefined}
+      ref={!isViewed.current ? ref : undefined}
       className="w-full space-y-3 rounded-lg bg-slate-700 py-2 text-sm"
     >
       <div>
