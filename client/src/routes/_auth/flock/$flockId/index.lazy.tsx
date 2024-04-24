@@ -497,24 +497,24 @@ const Voting = () => {
                 return (
                   <div
                     key={vote.publicId}
-                    className="flex flex-col items-center gap-4 rounded-lg bg-slate-700 px-2 py-4"
+                    className="flex items-center gap-4 rounded-lg bg-slate-700 px-2 py-4"
                   >
-                    <div className="flex w-full flex-col items-center justify-center gap-y-4 lg:flex-row lg:gap-0">
-                      <div className="text-center">
+                    <div className="flex w-full gap-2 flex-col">
+                      <div>
                         <span className="block font-semibold">Action</span>
                         <span>Update Description</span>
                       </div>
-                      <div className="text-center">
+                      <div>
                         <span className="block font-semibold">Creator</span>
                         <span>{vote.creator}</span>
                       </div>
-                    </div>
-                    <div className="w-full">
-                      <span className="font-semibold">Change To: </span>
-                      <p className="inline">{vote.description}</p>
+                      <div className="w-full">
+                        <span className="font-semibold">Change To</span>
+                        <p>{vote.description}</p>
+                      </div>
                     </div>
                     <div className="mx-auto flex items-center justify-end gap-2">
-                      <div className="flex flex-col items-center">
+                      <div className="relative flex flex-col items-center">
                         <button
                           onClick={() =>
                             castVote.mutate({
@@ -526,9 +526,9 @@ const Voting = () => {
                         >
                           Yes
                         </button>
-                        <span>({vote.yes})</span>
+                        <span className="absolute top-full">({vote.yes})</span>
                       </div>
-                      <div className="flex flex-col items-center">
+                      <div className="relative flex flex-col items-center">
                         <button
                           onClick={() =>
                             castVote.mutate({
@@ -540,7 +540,7 @@ const Voting = () => {
                         >
                           No
                         </button>
-                        <span>({vote.no})</span>
+                        <span className="absolute top-full">({vote.no})</span>
                       </div>
                     </div>
                   </div>
