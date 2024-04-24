@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 export default function User({
   picture,
   username,
@@ -6,9 +8,10 @@ export default function User({
   username: string;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <Link to={"/profile/" + username} className="flex items-center gap-3 w-fit">
       <img className="h-10 w-10 rounded-full" src={picture} />
       <span>{username}</span>
-    </div>
+    </Link>
   );
 }
+
