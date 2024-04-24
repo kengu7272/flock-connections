@@ -1,9 +1,10 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
 import {
+  PostCommentLikes,
   PostComments,
   PostLikes,
   Posts,
@@ -98,14 +99,22 @@ export const postRouter = router({
       const comments = await ctx.db
         .select({
           comment: {
-            id: PostComments.id,
             publicId: PostComments.publicId,
             text: PostComments.comment,
+            likes: PostComments.likes,
+            userLiked: PostCommentLikes.userId,
           },
           user: { username: Users.username, picture: Users.picture },
         })
         .from(PostComments)
         .innerJoin(Users, eq(Users.id, PostComments.userId))
+        .leftJoin(
+          PostCommentLikes,
+          and(
+            eq(PostCommentLikes.commentId, PostComments.id),
+            eq(PostCommentLikes.userId, ctx.user.id),
+          ),
+        )
         .where(eq(PostComments.postId, id))
         .orderBy(desc(PostComments.likes), desc(PostComments.id))
         .limit(8)
@@ -117,6 +126,46 @@ export const postRouter = router({
         nextCursor = (input.cursor ?? 0) + 7;
       }
 
-      return { comments, nextCursor };
+      const formatted = comments.map((comment) => ({
+        ...comment,
+        comment: { ...comment.comment, userLiked: !!comment.comment.userLiked },
+      }));
+
+      return { comments: formatted, nextCursor };
     }),
+  likeComment: protectedProcedure
+    .input(z.object({ commentPublicId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const [{ commentId, likes }] = await ctx.db
+        .select({ commentId: PostComments.id, likes: PostComments.likes })
+        .from(PostComments)
+        .where(eq(PostComments.publicId, input.commentPublicId));
+
+      const [previousLike] = await ctx.db
+        .select({ id: PostCommentLikes.id })
+        .from(PostCommentLikes)
+        .where(
+          and(eq(PostCommentLikes.commentId, commentId), eq(PostCommentLikes.userId, ctx.user.id)),
+        );
+
+      if (previousLike) {
+        await ctx.db.delete(PostCommentLikes).where(eq(PostCommentLikes.id, previousLike.id));
+        await ctx.db
+          .update(PostComments)
+          .set({ likes: likes - 1 })
+          .where(eq(PostComments.id, commentId));
+        return "Unliked";
+      }
+
+      await ctx.db
+        .insert(PostCommentLikes)
+        .values({ publicId: nanoid(16), commentId, userId: ctx.user.id });
+      await ctx.db
+        .update(PostComments)
+        .set({ likes: likes + 1 })
+        .where(eq(PostComments.id, commentId));
+
+      return "Liked";
+    })
 });
+
