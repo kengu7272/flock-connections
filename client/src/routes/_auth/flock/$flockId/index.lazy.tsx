@@ -499,7 +499,7 @@ const Voting = () => {
                     key={vote.publicId}
                     className="flex items-center gap-4 rounded-lg bg-slate-700 px-2 py-4"
                   >
-                    <div className="flex w-full gap-2 flex-col">
+                    <div className="flex w-full flex-col gap-2">
                       <div>
                         <span className="block font-semibold">Action</span>
                         <span>Update Description</span>
