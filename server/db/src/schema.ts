@@ -186,4 +186,20 @@ export const PostComments = mysqlTable("postComment", {
   comment: varchar("comment", { length: 512 }).notNull(),
 });
 
+export const PostCommentLikes = mysqlTable(
+  "postCommentLike",
+  {
+    id: serial("id").primaryKey(),
+    publicId: varchar("publicId", { length: 16 }).unique().notNull(),
+    commentId: bigint("commentId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => PostComments.id, { onDelete: "cascade" }),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => Users.id, { onDelete: "cascade" }),
+  },
+  (table) => ({ unq: unique().on(table.commentId, table.userId) }),
+);
+
 export const adapter = new DrizzleMySQLAdapter(db, Sessions, ProviderAccounts);
+
