@@ -52,7 +52,7 @@ export const baseRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const { cursor } = input;
-      
+
       const posts = await ctx.db
         .select({
           post: {
@@ -107,4 +107,3 @@ export const baseRouter = router({
       return { posts: formatted, nextCursor };
     }),
 });
-

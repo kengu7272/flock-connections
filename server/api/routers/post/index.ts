@@ -145,11 +145,16 @@ export const postRouter = router({
         .select({ id: PostCommentLikes.id })
         .from(PostCommentLikes)
         .where(
-          and(eq(PostCommentLikes.commentId, commentId), eq(PostCommentLikes.userId, ctx.user.id)),
+          and(
+            eq(PostCommentLikes.commentId, commentId),
+            eq(PostCommentLikes.userId, ctx.user.id),
+          ),
         );
 
       if (previousLike) {
-        await ctx.db.delete(PostCommentLikes).where(eq(PostCommentLikes.id, previousLike.id));
+        await ctx.db
+          .delete(PostCommentLikes)
+          .where(eq(PostCommentLikes.id, previousLike.id));
         await ctx.db
           .update(PostComments)
           .set({ likes: likes - 1 })
@@ -166,6 +171,5 @@ export const postRouter = router({
         .where(eq(PostComments.id, commentId));
 
       return "Liked";
-    })
+    }),
 });
-
